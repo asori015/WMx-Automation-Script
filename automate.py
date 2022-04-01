@@ -226,6 +226,8 @@ def getNewLoadID(conn):
     return dummyLoad
 
 def handle_118(conn):
+    print('TODO')
+    return
     # print('118\'s are handled in')
     # This request just fails...
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -378,6 +380,8 @@ def handle_140(conn, sscc):
     return handle_135(conn, sscc) # Status 140 totes function almost the same as status 135 totes
 
 def handle_141(conn, sscc):
+    print('TODO')
+    return
     print('Handling status 141 tote')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     makeRequest(conn, "GET", "/queryservice/orderstatusdd", headers, None)
