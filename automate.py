@@ -699,9 +699,9 @@ def formatExcelSheet(workBook):
             row += 1
             cellName = 'M' + str(row)
 
-def run():
+def run(num):
+    print('here', num)
     global f
-    #os.chdir('C:/Users/asorialimon/Documents/WMX-active')
     f = open('output.txt', 'w')
 
     # Open Excel sheet
@@ -732,14 +732,23 @@ def run():
     # conn.close()
     # f.close()
 
-def parseArgs():
+def parseArgs(arguments):
+    try:
+        arg = arguments[1]
+    except IndexError:
+        raise SystemExit(f"Usage: {sys.argv[0]} <string_to_reverse>")
+
     print(f"Arguments count: {len(sys.argv)}")
     for i, arg in enumerate(sys.argv):
         print(f"Argument {i:>6}: {arg}")
     return
 
+def main():
+    pass
+
 if __name__ == '__main__':
-    parseArgs()
+    main()
+    parseArgs(sys.argv)
     # threads = list()
     # for index in range(3):
     #     x = threading.Thread(target=run, args=(1,))
