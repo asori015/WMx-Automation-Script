@@ -2,17 +2,17 @@ import http, http.client
 import openpyxl
 import threading
 import concurrent.futures
+import argparse
 import json
 import gzip
 import re
-import sys
 from datetime import date
 
 # Global variables
 readyTotes = [] # All totes status 160 and up will be stored here and then passed to 'loadTotes()' for loading
 masteredTotes = {} # Dictionary for storing only *one* container for each masterbuild
 unmasteredTotes = {} # Same thing but for 161's
-storeBlacklist = ['101', '108', '152', '220'] # Stores that will not be worked on by the script
+storeBlacklist = ['108', '196'] # Stores that will not be worked on by the script
 f = '' # File handler
 
 headerTable = {
@@ -732,23 +732,50 @@ def run(num):
     # conn.close()
     # f.close()
 
-def parseArgs(arguments):
-    try:
-        arg = arguments[1]
-    except IndexError:
-        raise SystemExit(f"Usage: {sys.argv[0]} <string_to_reverse>")
+# def parseArgs(arguments):
+#     try:
+#         arg = arguments[1]
+#     except IndexError:
+#         raise SystemExit(f"Usage: {sys.argv[0]} <string_to_reverse>")
 
-    print(f"Arguments count: {len(sys.argv)}")
-    for i, arg in enumerate(sys.argv):
-        print(f"Argument {i:>6}: {arg}")
-    return
+#     print(f"Arguments count: {len(sys.argv)}")
+#     for i, arg in enumerate(sys.argv):
+#         print(f"Argument {i:>6}: {arg}")
+#     return
 
-def main():
-    pass
+def init_argparse() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s [OPTION] [FILE]...",
+        description="Automates WMx Dummy Load",
+        epilog="GLHF!"
+    )
+    parser.add_argument(
+        "-v", "--version", 
+        action="version",
+        version = f"{parser.prog} version 1.0.0"
+    )
+    parser.add_argument(
+        "-f", "--format",
+        action = 'store_true',
+        help='Format otr into excel sheet.'
+    )
+    parser.add_argument(
+        '-l', '--loadid',
+        type=str,
+        help='Load ID to be used for loading'
+    )
+    # parser.add_argument('files', nargs='*')
+    return parser
+
+def main() -> None:
+    parser = init_argparse()
+    # print(parser.Namespace)
+    args = parser.parse_args()
+    print(args)
 
 if __name__ == '__main__':
     main()
-    parseArgs(sys.argv)
+    # parseArgs(sys.argv)
     # threads = list()
     # for index in range(3):
     #     x = threading.Thread(target=run, args=(1,))
@@ -757,6 +784,7 @@ if __name__ == '__main__':
     
     # for i in threads:
     #     i.join()
-    with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-        executor.map(run, range(3))
+    
+    # with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+    #     executor.map(run, range(3))
     # run()
