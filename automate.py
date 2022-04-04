@@ -7,6 +7,7 @@ import json
 import gzip
 import re
 from datetime import date
+import logging
 
 # Global variables
 readyTotes = [] # All totes status 160 and up will be stored here and then passed to 'loadTotes()' for loading
@@ -699,15 +700,20 @@ def formatExcelSheet(workBook):
             row += 1
             cellName = 'M' + str(row)
 
-def run(num):
-    print('here', num)
-    global f
-    f = open('output.txt', 'w')
+def run(threadID: int):
+    print('here1', threadID)
+    with logLock:
+        print('inside lock')
+        logger.debug('Starting thread %s', threadID)
+        print('leaving lock')
+    print('here2', threadID)
+    # global f
+    # f = open('output.txt', 'w')
 
     # Open Excel sheet
-    wb = openpyxl.load_workbook(filename = 'Resources/totes.xlsx')
-    sheet_ranges = wb['Sheet1']
-    formatExcelSheet(wb)
+    # wb = openpyxl.load_workbook(filename = 'Resources/totes.xlsx')
+    # sheet_ranges = wb['Sheet1']
+    # formatExcelSheet(wb)
 
     # Establish WMx initial connection
     # conn = initWMx()
@@ -717,37 +723,26 @@ def run(num):
     #handle_118(conn)
 
     # Master 161s and add to loading list
-    for row in unmasteredTotes:
-        readyTotes.append(masterTotes(conn, unmasteredTotes[row]))
+    # for row in unmasteredTotes:
+    #     readyTotes.append(masterTotes(conn, unmasteredTotes[row]))
 
     # Add 165s to loading list
-    for row in masteredTotes:
-        readyTotes.append(masteredTotes[row])
+    # for row in masteredTotes:
+    #     readyTotes.append(masteredTotes[row])
 
     # If we have selected a Load_ID for loading
     # if dummyLoad != '':
     #     loadTotes(conn, dummyLoad, readyTotes)
 
-    wb.save(filename = 'Resources/otr.xlsx')
+    # wb.save(filename = 'Resources/otr.xlsx')
     # conn.close()
     # f.close()
-
-# def parseArgs(arguments):
-#     try:
-#         arg = arguments[1]
-#     except IndexError:
-#         raise SystemExit(f"Usage: {sys.argv[0]} <string_to_reverse>")
-
-#     print(f"Arguments count: {len(sys.argv)}")
-#     for i, arg in enumerate(sys.argv):
-#         print(f"Argument {i:>6}: {arg}")
-#     return
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         usage="%(prog)s [OPTION] [FILE]...",
         description="Automates WMx Dummy Load",
-        epilog="GLHF!"
+        epilog="Please use responsibly..."
     )
     parser.add_argument(
         "-v", "--version", 
@@ -762,29 +757,32 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument(
         '-l', '--loadid',
         type=str,
-        help='Load ID to be used for loading'
+        help='Load ID to be used for loading.'
     )
-    # parser.add_argument('files', nargs='*')
+    parser.add_argument(
+        '-t', '--threads',
+        type=int,
+        help='Number of threads this script will generate.'
+    )
     return parser
 
+logLock = threading.Lock()
 def main() -> None:
+    # Set up logging for this script
+    logging.basicConfig(format='(%(name)s - %(levelname)s) %(message)s', level=logging.DEBUG, filename='log.txt', filemode='w')
+
+    # Parse CLI arguments
     parser = init_argparse()
-    # print(parser.Namespace)
     args = parser.parse_args()
-    print(args)
+    logging.debug('args = %s', args)
+
+    # Create threads
+    logging.debug('args.threads = %s', args.threads)
+    # logLock = threading.Lock()
+    if args.threads is not None and args.threads > 0:
+        with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
+            # executor.submit(run, 0, [logLock])
+            executor.map(run, range(args.threads))
 
 if __name__ == '__main__':
     main()
-    # parseArgs(sys.argv)
-    # threads = list()
-    # for index in range(3):
-    #     x = threading.Thread(target=run, args=(1,))
-    #     threads.append(x)
-    #     x.start()
-    
-    # for i in threads:
-    #     i.join()
-    
-    # with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-    #     executor.map(run, range(3))
-    # run()
