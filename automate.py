@@ -70,7 +70,53 @@ def makeRequest(conn, method, path, indexes, payload):
     return data
 
 def requestBAx():
-    pass
+    conn = http.client.HTTPSConnection("bax08s.am.gxo.com", 443)
+
+    headers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+    response, responseHeaders = makeRequest(conn, "GET", "/handm/login/", headers, None)
+    csrfToken = re.findall(r'csrf.*value="(.*)">', response)[0]
+    # cookieHeader = 
+    cookieHeaders = re.findall(r'Set-Cookie: (.*);', str(responseHeaders))
+    cookieHeader = functools.reduce(lambda a, b: a + b[:b.find(';')] + '; ', cookieHeaders, '')[:-2]
+
+    headers = [0, 1, 37, 38, 2, 3, 4, 5, 14, 39, 6, 7, 16, 9, 10, 11, 31, 12, 13, 32]
+    params = 'csrf_token=' + csrfToken + '&version=1.2.4&username=tponce&password=Welcome1234567&execution=&_eventId=submit&geolocation=&submit=Log+In'
+    lookupHeaders[37] = ('Content-Length', str(len(params)))
+    lookupHeaders[32] = ('Cookie', cookieHeader)
+    print('loging in...')
+    response, responseHeaders = makeRequest(conn, "POST", "/handm/login/", headers, params)
+    # print(response)
+
+    print('loading main dashboard...')
+    headers = [0, 1, 38, 5, 6, 7, 16, 9, 10, 11, 2, 3, 4, 31, 12, 13, 40]
+    response, responseHeaders = makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", headers, None)
+    # print(response[:200])
+    print('load random api')
+    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
+    response, responseHeaders = makeRequest(conn, "GET", "/csstemplateasyncmodelview/api/read", headers, None)
+    # print(response[:200])
+    print('load another random api')
+    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
+    response, responseHeaders = makeRequest(conn, "GET", "/handm/csstemplateasyncmodelview/api/read", headers, None)
+    # print(response)
+
+    print('load aging totes report')
+    headers = [0, 1, 37, 2, 43, 3, 49, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
+    params = '{"datasource":"1004028__table","viz_type":"table","slice_id":1002187,"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":1000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE_PST","CASE_CREATE_DATE_PST","MBOLKEY","LOAD_ID","TR_TYPE","SITEID","EXTERNKEY","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","LANE","ROUTE","PACKGROUPKEY","TOTALQTY","COMMENTS"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d %H:%M:%S","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
+    lookupHeaders[61] = ('Content-Length', str(len(params)))
+    response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", headers, params)
+    atr = json.loads(response)
+    # print(atr['data']['records'])
+    # [{'ORDER_CREATE_DATE_PST': '04/04/2022 10:48 PM', 'CASE_CREATE_DATE_PST': '04/05/2022 12:31 AM', 'MBOLKEY': None, 'LOAD_ID': None, 'TR_TYPE': None, 'SITEID': 'ONT005', 'EXTERNKEY': 'D159283090', 'ORDERKEY': '0004172683', 'CS_ID': '0012956710', 'SSCC': '00273129824818208135', 'CONT_KEY': None, 'MASTER_CONTAINERKEY': None, 'CARRIER': 'USLAX-GUMA', 'PICK_METHOD': 'GO', 'LANE': '03-04', 'ROUTE': 'VIA_SP', 'PACKGROUPKEY': 'US020200_C', 'TOTALQTY': None, 'COMMENTS': '118 - CONTACT IT SUPPORT TO UNALLOCATE CASE'},
+    statuses = {}
+    for record in atr['data']['records']:
+        if record['COMMENTS'] not in statuses:
+            statuses[record['COMMENTS']] = 1
+        else:
+            statuses[record['COMMENTS']] += 1
+    for i in statuses:
+        print(i, statuses[i])
+        pass
 
 def initWMx():
     print('Initializing WMx connection')
