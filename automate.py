@@ -69,6 +69,9 @@ def makeRequest(conn, method, path, indexes, payload):
         f.write(method + " " + path + "\n" + gzip.decompress(data).decode('utf-8') + '\n')
     return data
 
+def requestBAx():
+    pass
+
 def initWMx():
     print('Initializing WMx connection')
     conn = http.client.HTTPConnection("172.19.45.163", 80)
@@ -701,42 +704,16 @@ def formatExcelSheet(workBook):
             cellName = 'M' + str(row)
 
 def run(threadID: int):
-    print('here1', threadID)
+    global f
+    print('here1', threadID * threadID)
     with logLock:
         print('inside lock')
-        logger.debug('Starting thread %s', threadID)
-        print('leaving lock')
+        f = open('output.txt', 'a')
+        f.write(threadID)
+        f.close()
+        # logger.debug('Starting thread %s', threadID)
+        # print('leaving lock')
     print('here2', threadID)
-    # global f
-    # f = open('output.txt', 'w')
-
-    # Open Excel sheet
-    # wb = openpyxl.load_workbook(filename = 'Resources/totes.xlsx')
-    # sheet_ranges = wb['Sheet1']
-    # formatExcelSheet(wb)
-
-    # Establish WMx initial connection
-    # conn = initWMx()
-    # dummyLoad = getNewLoadID(conn)
-
-    #handleAllTotes(conn, wb)
-    #handle_118(conn)
-
-    # Master 161s and add to loading list
-    # for row in unmasteredTotes:
-    #     readyTotes.append(masterTotes(conn, unmasteredTotes[row]))
-
-    # Add 165s to loading list
-    # for row in masteredTotes:
-    #     readyTotes.append(masteredTotes[row])
-
-    # If we have selected a Load_ID for loading
-    # if dummyLoad != '':
-    #     loadTotes(conn, dummyLoad, readyTotes)
-
-    # wb.save(filename = 'Resources/otr.xlsx')
-    # conn.close()
-    # f.close()
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -767,6 +744,7 @@ def init_argparse() -> argparse.ArgumentParser:
     return parser
 
 logLock = threading.Lock()
+
 def main() -> None:
     # Set up logging for this script
     logging.basicConfig(format='(%(name)s - %(levelname)s) %(message)s', level=logging.DEBUG, filename='log.txt', filemode='w')
@@ -786,3 +764,5 @@ def main() -> None:
 
 if __name__ == '__main__':
     main()
+
+# f.close()
