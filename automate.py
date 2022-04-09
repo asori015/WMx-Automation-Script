@@ -6,6 +6,7 @@ import argparse
 import json
 import gzip
 import re
+import functools
 from datetime import date
 import logging
 
@@ -15,7 +16,7 @@ masteredTotes = {} # Dictionary for storing only *one* container for each master
 unmasteredTotes = {} # Same thing but for 161's
 storeBlacklist = ['108', '196'] # Stores that will not be worked on by the script
 
-headerTable = {
+WMxHeaderTable = {
 	0	: ('Host', 'api.security.wmxp008.wmx.sc.xpo.com'),
 	1	: ('Connection', 'keep-alive'),
 	2	: ('Content-Length', '0'),
@@ -45,6 +46,9 @@ headerTable = {
     27	: ('Host', 'api.reporting.wmxp008.wmx.sc.xpo.com'),
 }
 
+BAxHeaderTable = {
+}
+
 def addThrees(value):
     newValue = ''
     for row in value:
@@ -54,7 +58,7 @@ def addThrees(value):
 def getHeaders(indexes):
     headerDict = {}
     for row in indexes:
-        headerDict.update({headerTable[row][0]: headerTable[row][1]})
+        headerDict.update({WMxHeaderTable[row][0]: WMxHeaderTable[row][1]})
     return headerDict
 
 def makeRequest(conn, method, path, indexes, payload):
@@ -81,8 +85,8 @@ def requestBAx():
 
     headers = [0, 1, 37, 38, 2, 3, 4, 5, 14, 39, 6, 7, 16, 9, 10, 11, 31, 12, 13, 32]
     params = 'csrf_token=' + csrfToken + '&version=1.2.4&username=tponce&password=Welcome1234567&execution=&_eventId=submit&geolocation=&submit=Log+In'
-    lookupHeaders[37] = ('Content-Length', str(len(params)))
-    lookupHeaders[32] = ('Cookie', cookieHeader)
+    BAxHeaderTable[37] = ('Content-Length', str(len(params)))
+    BAxHeaderTable[32] = ('Cookie', cookieHeader)
     print('loging in...')
     response, responseHeaders = makeRequest(conn, "POST", "/handm/login/", headers, params)
     # print(response)
@@ -102,8 +106,8 @@ def requestBAx():
 
     print('load aging totes report')
     headers = [0, 1, 37, 2, 43, 3, 49, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
-    params = '{"datasource":"1004028__table","viz_type":"table","slice_id":1002187,"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":1000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE_PST","CASE_CREATE_DATE_PST","MBOLKEY","LOAD_ID","TR_TYPE","SITEID","EXTERNKEY","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","LANE","ROUTE","PACKGROUPKEY","TOTALQTY","COMMENTS"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d %H:%M:%S","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
-    lookupHeaders[61] = ('Content-Length', str(len(params)))
+    params = '{"datasource":"1004028__table","viz_type":"table","slice_id":1002187,"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":10000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE_PST","CASE_CREATE_DATE_PST","MBOLKEY","LOAD_ID","TR_TYPE","SITEID","EXTERNKEY","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","LANE","ROUTE","PACKGROUPKEY","TOTALQTY","COMMENTS"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
+    BAxHeaderTable[61] = ('Content-Length', str(len(params)))
     response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", headers, params)
     atr = json.loads(response)
     # print(atr['data']['records'])
@@ -124,9 +128,9 @@ def initWMx():
     
     headers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     params = '{"UserId":"tponce","Psw":"Welcome123456","SiteId":"ONT005"}'
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     response = makeRequest(conn, "POST", "/login", headers, params)
-    headerTable[13] = ('Authorization', 'Bearer ' + json.loads(gzip.decompress(response))['Token'])
+    WMxHeaderTable[13] = ('Authorization', 'Bearer ' + json.loads(gzip.decompress(response))['Token'])
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     makeRequest(conn, "GET", "/queryservice/equipmentgroupdd", headers, None)
@@ -148,7 +152,7 @@ def initWMx():
     
     headers = [10, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{"CONTAINERKEY":"0002401084"}'
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/queryservice/data/57585f434f4e5441494e45525f53484950/4144445453/66616c7365/31/3330", headers, params)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -224,7 +228,7 @@ def getNewLoadID(conn):
     #
     headers = [10, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{"LOADID":"' + dummyLoad + '"}'
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/queryservice/data/57585f4c4f4144/4144445453/66616c7365/31/3330", headers, params)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -249,12 +253,12 @@ def getNewLoadID(conn):
     #
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = response
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/isloaddirty", headers, params)
     #
     headers = [26, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = response
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/datamodify/saveload", headers, params)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -277,7 +281,7 @@ def handle_118(conn):
     # Here we're grabbing every wave that's status 118 or below.
     headers = [10, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{"STATUS":"102|105|106|112|115|116|118|101"}'
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     response = makeRequest(conn, "PUT", "/queryservice/data/57585f57415645/4144445453/66616c7365/31/3330", headers, params)
     #
     response = json.loads(response)
@@ -287,7 +291,7 @@ def handle_118(conn):
     while numberOfWaves > 30:
         headers = [10, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
         params = '{"STATUS":"102|105|106|112|115|116|118|101"}'
-        headerTable[2] = ('Content-Length', str(len(params)))
+        WMxHeaderTable[2] = ('Content-Length', str(len(params)))
         response = makeRequest(conn, "PUT", "/queryservice/data/57585f57415645/4144445453/66616c7365/" + addThrees(str(pageNumber)) + "/3330", headers, params)
         #
         response = json.loads(response)
@@ -368,7 +372,7 @@ def handle_135(conn, sscc):
     print('2')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = ''
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     response = makeRequest(conn, "PUT", "/container/opencontainersingle/" + addThrees(caseID) + "/", headers, params)
     containerKey = response.decode('utf-8')[1:-1]
     print('3')
@@ -381,7 +385,7 @@ def handle_135(conn, sscc):
     print('5')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{}'
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/addcasesingle/" + addThrees(containerKey) + "/" + addThrees(caseID) + "/", headers, params)
     print('6')
     #The response from this query gets fed into the 'iscontainerdirty' request
@@ -399,12 +403,12 @@ def handle_135(conn, sscc):
     print('10')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = response.decode('utf-8')
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/iscontainerdirty", headers, params)
     print('11: Requesting to close container')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{}'
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/closepackedcontainersingle/" + addThrees(containerKey), headers, params)
     print('12')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -448,7 +452,7 @@ def handle_141(conn, sscc):
     
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '""'
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/verification/create/43415345/" + addThrees(sscc), headers, params)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -486,7 +490,7 @@ def handle_141(conn, sscc):
     
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = response.decode('utf-8')
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/verification/instructions/case/43415345", headers, params)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -504,7 +508,7 @@ def handle_141(conn, sscc):
             
             headers = [27, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
             params = '"' + skuRecord['SKU'] + '"'
-            headerTable[2] = ('Content-Length', str(len(params)))
+            WMxHeaderTable[2] = ('Content-Length', str(len(params)))
             makeRequest(conn, "POST", "/format/parselist/534b554c4142454c/3030/3138", headers, params)
             
             headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -515,12 +519,12 @@ def handle_141(conn, sscc):
             
             headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
             params = '{"ORDERVERIFYID":27110881,"SITEID":"ONT005","CASEID":"0011847104","ORDERKEY":"0003772380","ORDERLINENO":9,"SKU":"000990977002214005","DESCRIPTION":"Sweater White, L","SERIAL_FLAG":"N","CLIENTID":"4044","LOT":"LOT","PICKQTY":3,"VERIFYQTY":0,"UOM":"EA","UOM_LEVEL":1,"UOMQTY":3,"UOMCONVQTY":1,"NONINVENTORY_FLAG":"N","DATACAPTURE_FLAG":"N","DATACAPTURECODE":null,"VALIDATE_FLAG":"N","VALIDATECODE":null,"VERIFYWHO":null,"DEFECT_FLAG":"N","DEFECTCODE":null,"DEFECTNOTES":null,"PICKER":null,"RESOLVECODE":null,"RESOLVEWHO":null,"HAZMAT_FLAG":"N","HAZMATCODE":null,"PACK_FLAG":"N","PACKTS":null,"PACKWHO":null,"PACKREFKEY":null,"DROPID":null,"ORDERPICKID":33851009,"STATUS":141,"STATUSTS":"2022-03-12T18:16:07.180676-05:00","VERGROUPCD":null,"VERGROUPKEY":null,"ADDTS":"2022-03-12T18:16:07.180682-05:00","ADDWHO":"yharosvargas","EDITTS":"2022-03-12T18:16:07.180685-05:00","EDITWHO":"yharosvargas","SKUSCAN_FLAG":"Y","LOTATR1":null,"LOTATR2":null,"LOTATR3":null,"LOTATR4":null,"LOTATR5":null,"LOTATR6":null,"LOTATR7":null,"LOTATR8":null,"CARTONTYPE":"A16"}'
-            headerTable[2] = ('Content-Length', str(len(params)))
+            WMxHeaderTable[2] = ('Content-Length', str(len(params)))
             makeRequest(conn, "PUT", "/verification/instructions/verifyline", headers, params)
             
             headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
             params = '""'
-            headerTable[2] = ('Content-Length', str(len(params)))
+            WMxHeaderTable[2] = ('Content-Length', str(len(params)))
             makeRequest(conn, "PUT", "/verification/verifydetail/3237313130383831/31", headers, params)
             
             headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -553,7 +557,7 @@ def masterTotes(conn, containerKey):
     print('2: Closing master container')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
     params = '{}'
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/closemastercontainer/" + addThrees(containerKey), headers, params)
     return containerKey
 
@@ -589,13 +593,13 @@ def loadTotes(conn, loadID, containerKeys):
     print('7')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
     params = response.decode('utf-8')
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/isloaddirty", headers, params)
     
     print('8')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
     params = response.decode('utf-8')
-    headerTable[2] = ('Content-Length', str(len(params)))
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/saveload", headers, params)
     
     print('9')
@@ -619,7 +623,7 @@ def loadTotes(conn, loadID, containerKeys):
         print('13: Loading container ' + containerKey)
         headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
         params = '{}'
-        headerTable[2] = ('Content-Length', str(len(params)))
+        WMxHeaderTable[2] = ('Content-Length', str(len(params)))
         makeRequest(conn, "PUT", "/container/loadcontainer/" + addThrees(loadID) + "/" + addThrees(containerKey) + "/5339/302e646f76716f386a6c366774", headers, params)
         
         print('14')
@@ -806,6 +810,7 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace):
     #     logging.debug('Starting thread %s', threadID)
     #     print('leaving lock')
     # print('exit', threadID)
+    pass
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -880,11 +885,15 @@ def main() -> None:
         logging.info('No file found, using BAx')
         requestBAx()
 
+    if args.format:
+        logging.info('Generating Open Tote Report Excel sheet')
+
     # sheet_ranges = wb['Sheet1']
     # formatExcelSheet(wb)
 
     # Create threads
     logLock = threading.Lock()
+    logging.info('Processing Aging Tote Report with %s threads', args.threads)
     if args.threads is not None and args.threads > 0:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
             executor.map(lambda x: run(x, logLock, args), range(args.threads))
