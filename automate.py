@@ -11,12 +11,6 @@ import functools
 from datetime import date
 import logging
 
-# Global variables
-readyTotes = [] # All totes status 160 and up will be stored here and then passed to 'loadTotes()' for loading
-masteredTotes = {} # Dictionary for storing only *one* container for each masterbuild
-unmasteredTotes = {} # Same thing but for 161's
-storeBlacklist = ['108', '196'] # Stores that will not be worked on by the script
-
 WMxHeaderTable = {
 	0	: ('Host', 'api.security.wmxp008.wmx.sc.xpo.com'),
 	1	: ('Connection', 'keep-alive'),
@@ -109,7 +103,7 @@ def requestBAx(username: str, password: str) -> list:
     BAxHeaderTable[61] = ('Content-Length', str(len(params)))
     response = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", headers, params)
     atr = json.loads(response)
-    return atr
+    return atr['data']['records']
 
 def initWMx():
     print('Initializing WMx connection')
@@ -742,7 +736,7 @@ def formatExcelSheet(workBook):
             row += 1
             cellName = 'M' + str(row)
 
-def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace):
+def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, processedRecords: list) -> None:
     # Apparently, threaded functions don't display exceptions normally, so
     # I'm encapsulating the entire function in a try catch block to fix that.
     try:
@@ -801,7 +795,36 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace):
     # print('exit', threadID)
     pass
 
-def processExcel(workBook: openpyxl.Workbook) -> List:
+def processATR(atr: list, blacklist: list) -> list:
+    unprocessedTotes = []
+    unloadedTotes = []
+    unmasteredTotes = {} # Dictionary for storing only *one* container for each masterbuild
+    masteredTotes = {} # Same thing but for 161's
+
+
+    unprocessedStatuses = ['118', '120', '125', '130', '135', '140', '141', '150']
+
+    for record in atr:
+        status = record['COMMENTS'][:3]
+        if record['PACKGROUPKEY'][3:6] in blacklist:
+            continue 
+        if status in unprocessedStatuses:
+            unprocessedTotes.append([record, 0])
+        elif status == '160':
+            unloadedTotes.append([record, 0])
+        elif status == '161':
+            unmasteredTotes[record['MASTER_CONTAINERKEY']] = record
+        elif status == '165':
+            masteredTotes[record['MASTER_CONTAINERKEY']] = record
+    
+    for masterContainerKey in unmasteredTotes:
+        unprocessedTotes.append([unmasteredTotes[masterContainerKey], 0])
+    for masterContainerKey in masteredTotes:
+        unloadedTotes.append([masteredTotes[masterContainerKey], 0])
+
+    return [unprocessedTotes, unloadedTotes]
+
+def processExcel(workBook: openpyxl.Workbook) -> list:
     records = []
     all_columns = [
         "ORDER_CREATE_DATE_PST",
@@ -835,8 +858,36 @@ def processExcel(workBook: openpyxl.Workbook) -> List:
         record = {}
         for index2, cell in enumerate(row):
             record[all_columns[index2]] = cell.value
-            records.append(record)
+        records.append(record)
     return records
+
+def getAgingToteReport(args: argparse.Namespace) -> list:
+    wb = None
+    atr = None
+
+    # Load ATR
+    if args.excelfile != None:
+        # Check to see if the filename is valid
+        try:
+            with open(args.excelfile, 'r') as f:
+                pass
+            wb = openpyxl.load_workbook(filename = args.excelfile)
+            logging.info('Opened %s', args.excelfile)
+        except FileNotFoundError as e:
+            logging.exception('File name not valid')
+            logging.info('Falling back on BAx')
+            atr = requestBAx(args.username, args.password)
+        except Exception as e:
+            logging.exception('File is not valid Excel file')
+            logging.info('Falling back on BAx')
+            atr = requestBAx(args.username, args.password)
+    else:
+        logging.info('No file found, using BAx')
+        atr = requestBAx(args.username, args.password)
+
+    if wb != None:
+        atr = processExcel(wb)
+    return atr
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -892,99 +943,33 @@ def main() -> None:
     args = parser.parse_args()
     logging.debug('args = %s', args)
 
-    wb = None
-    atr = None
+    # Get ATR
+    atr = getAgingToteReport(args)
+    logging.debug(atr)
 
-    # Load ATR
-    if args.excelfile != None:
-        # Check to see if the filename is valid
-        try:
-            with open(args.excelfile, 'r') as f:
-                pass
-            wb = openpyxl.load_workbook(filename = args.excelfile)
-            logging.info('Opened %s', args.excelfile)
-        except FileNotFoundError as e:
-            logging.exception('File name not valid')
-            logging.info('Falling back on BAx')
-            atr = requestBAx(args.username, args.password)
-        except Exception as e:
-            logging.exception('File is not valid Excel file')
-            logging.info('Falling back on BAx')
-            atr = requestBAx(args.username, args.password)
-    else:
-        logging.info('No file found, using BAx')
-        atr = requestBAx(args.username, args.password)
-
-    if wb != None:
-        atr = processExcel(wb)
-
-    print(atr)
-
-    records = [{
-        "ORDER_CREATE_DATE_PST": "03/16/2022 10:42 PM",
-        "CASE_CREATE_DATE_PST": "03/17/2022 07:31 AM",
-        "MBOLKEY": None,
-        "LOAD_ID": None,
-        "TR_TYPE": None,
-        "SITEID": "ONT005",
-        "EXTERNKEY": "D156495838",
-        "ORDERKEY": "0003831701",
-        "CS_ID": "0012094552",
-        "SSCC": "00273129824810015656",
-        "CONT_KEY": None,
-        "MASTER_CONTAINERKEY": None,
-        "CARRIER": "USLAX-GUMA",
-        "PICK_METHOD": "GO",
-        "LANE": "05-06",
-        "ROUTE": "VIA_SP",
-        "PACKGROUPKEY": "US063800_J",
-        "TOTALQTY": None,
-        "COMMENTS": "118 - CONTACT IT SUPPORT TO UNALLOCATE CASE"
-    },
-    {
-        "ORDER_CREATE_DATE_PST": "03/16/2022 10:42 PM",
-        "CASE_CREATE_DATE_PST": "03/17/2022 07:31 AM",
-        "MBOLKEY": None,
-        "LOAD_ID": None,
-        "TR_TYPE": None,
-        "SITEID": "ONT005",
-        "EXTERNKEY": "D156495838",
-        "ORDERKEY": "0003831701",
-        "CS_ID": "0012094553",
-        "SSCC": "00273129824810015663",
-        "CONT_KEY": None,
-        "MASTER_CONTAINERKEY": None,
-        "CARRIER": "USLAX-GUMA",
-        "PICK_METHOD": "GO",
-        "LANE": "05-06",
-        "ROUTE": "VIA_SP",
-        "PACKGROUPKEY": "US063800_J",
-        "TOTALQTY": None,
-        "COMMENTS": "118 - CONTACT IT SUPPORT TO UNALLOCATE CASE"
-    }]
-
-    # newSheet = openpyxl.Workbook()
-    # newSheet.title = 'Test' + ' ' + date.today().strftime('%m.%d.%y')
-    # # print(newSheet.sheetnames)
-    # newSheet['Sheet']['A1'].value = records[0]['COMMENTS']
-    # newSheet['Sheet'].column_dimensions['A'].width = len(newSheet['Sheet']['A1'].value)
-    # red = openpyxl.styles.PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
-    # newSheet['Sheet']['A1'].fill = red
-
-    # newSheet.save(filename = 'Resources/otr.xlsx')
+    storeBlacklist = ['108', '196'] # Stores that will not be worked on by the script
+    processedRecords = processATR(atr, storeBlacklist)
+    logging.debug(processedRecords)
 
     if args.format:
+        # newSheet = openpyxl.Workbook()
+        # newSheet.title = 'Test' + ' ' + date.today().strftime('%m.%d.%y')
+        # # print(newSheet.sheetnames)
+        # newSheet['Sheet']['A1'].value = records[0]['COMMENTS']
+        # newSheet['Sheet'].column_dimensions['A'].width = len(newSheet['Sheet']['A1'].value)
+        # red = openpyxl.styles.PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
+        # newSheet['Sheet']['A1'].fill = red
+
+        # newSheet.save(filename = 'Resources/otr.xlsx')
         logging.info('Generating Open Tote Report Excel sheet')
 
-    # sheet_ranges = wb['Sheet1']
-    # formatExcelSheet(wb)
 
     # Create threads
     logLock = threading.Lock()
     logging.info('Processing Aging Tote Report with %s threads', args.threads)
     if args.threads is not None and args.threads > 0:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-            executor.map(lambda x: run(x, logLock, args), range(args.threads))
+            executor.map(lambda x: run(x, logLock, args, processedRecords), range(args.threads))
 
 if __name__ == '__main__':
     main()
