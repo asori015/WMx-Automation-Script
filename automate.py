@@ -10,6 +10,7 @@ import re
 import functools
 from datetime import date
 import logging
+import time
 
 WMxHeaderTable = {
 	0	: ('Host', 'api.security.wmxp008.wmx.sc.xpo.com'),
@@ -736,15 +737,20 @@ def formatExcelSheet(workBook):
             row += 1
             cellName = 'M' + str(row)
 
-def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, processedRecords: list) -> None:
+def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, processedRecords: dict) -> None:
     # Apparently, threaded functions don't display exceptions normally, so
     # I'm encapsulating the entire function in a try catch block to fix that.
     try:
-        pass
-
-        
+        for index in range(len(processedRecords['unprocessedTotes'])):
+            with logLock:
+                record = processedRecords['unprocessedTotes'][index]
+                if record['threadid'] == 0:
+                    print(threadID)
+                    print(record['record']['SSCC'])
+                    record['threadid'] = threadID
+            time.sleep(0.1)
     except Exception as e:
-        print(e)
+        logging.exception(e)
     return
 
     global f
@@ -795,7 +801,7 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, proces
     # print('exit', threadID)
     pass
 
-def processATR(atr: list, blacklist: list) -> list:
+def processATR(atr: list, blacklist: list) -> dict:
     unprocessedTotes = []
     unloadedTotes = []
     unmasteredTotes = {} # Dictionary for storing only *one* container for each masterbuild
@@ -809,20 +815,20 @@ def processATR(atr: list, blacklist: list) -> list:
         if record['PACKGROUPKEY'][3:6] in blacklist:
             continue 
         if status in unprocessedStatuses:
-            unprocessedTotes.append([record, 0])
+            unprocessedTotes.append({'record': record, 'threadid': 0})
         elif status == '160':
-            unloadedTotes.append([record, 0])
+            unloadedTotes.append({'record': record, 'threadid': 0})
         elif status == '161':
             unmasteredTotes[record['MASTER_CONTAINERKEY']] = record
         elif status == '165':
             masteredTotes[record['MASTER_CONTAINERKEY']] = record
     
     for masterContainerKey in unmasteredTotes:
-        unprocessedTotes.append([unmasteredTotes[masterContainerKey], 0])
+        unprocessedTotes.append({'record': unmasteredTotes[masterContainerKey], 'threadid': 0})
     for masterContainerKey in masteredTotes:
-        unloadedTotes.append([masteredTotes[masterContainerKey], 0])
+        unloadedTotes.append({'record': masteredTotes[masterContainerKey], 'threadid': 0})
 
-    return [unprocessedTotes, unloadedTotes]
+    return {'unprocessedTotes': unprocessedTotes, 'unloadedTotes': unloadedTotes}
 
 def processExcel(workBook: openpyxl.Workbook) -> list:
     records = []
@@ -969,7 +975,9 @@ def main() -> None:
     logging.info('Processing Aging Tote Report with %s threads', args.threads)
     if args.threads is not None and args.threads > 0:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-            executor.map(lambda x: run(x, logLock, args, processedRecords), range(args.threads))
+            executor.map(lambda x: run(x + 1, logLock, args, processedRecords), range(args.threads))
+
+    logging.debug(processedRecords)
 
 if __name__ == '__main__':
     main()
