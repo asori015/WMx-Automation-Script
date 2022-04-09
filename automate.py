@@ -73,43 +73,41 @@ def makeRequest(conn, method, path, indexes, payload):
         f.write(method + " " + path + "\n" + gzip.decompress(data).decode('utf-8') + '\n')
     return data
 
-def requestBAx():
-    return
+def requestBAx(username: str, password: str) -> list:
     conn = http.client.HTTPSConnection("bax08s.am.gxo.com", 443)
+    logging.info('Connected to BAx')
 
     headers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
     response, responseHeaders = makeRequest(conn, "GET", "/handm/login/", headers, None)
     csrfToken = re.findall(r'csrf.*value="(.*)">', response)[0]
-    # cookieHeader = 
     cookieHeaders = re.findall(r'Set-Cookie: (.*);', str(responseHeaders))
     cookieHeader = functools.reduce(lambda a, b: a + b[:b.find(';')] + '; ', cookieHeaders, '')[:-2]
 
     headers = [0, 1, 37, 38, 2, 3, 4, 5, 14, 39, 6, 7, 16, 9, 10, 11, 31, 12, 13, 32]
-    params = 'csrf_token=' + csrfToken + '&version=1.2.4&username=tponce&password=Welcome1234567&execution=&_eventId=submit&geolocation=&submit=Log+In'
+    params = 'csrf_token=' + csrfToken + '&version=1.2.4&username=' + username + '&password=' + password + '&execution=&_eventId=submit&geolocation=&submit=Log+In'
     BAxHeaderTable[37] = ('Content-Length', str(len(params)))
     BAxHeaderTable[32] = ('Cookie', cookieHeader)
-    print('loging in...')
-    response, responseHeaders = makeRequest(conn, "POST", "/handm/login/", headers, params)
-    # print(response)
+    
+    logging.info('Logging into to BAx...')
+    makeRequest(conn, "POST", "/handm/login/", headers, params)
 
-    print('loading main dashboard...')
+    logging.info('Loading main dashboard...')
     headers = [0, 1, 38, 5, 6, 7, 16, 9, 10, 11, 2, 3, 4, 31, 12, 13, 40]
-    response, responseHeaders = makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", headers, None)
-    # print(response[:200])
-    print('load random api')
+    makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", headers, None)
+    
+    logging.info('Loading random API...')
     headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
-    response, responseHeaders = makeRequest(conn, "GET", "/csstemplateasyncmodelview/api/read", headers, None)
-    # print(response[:200])
-    print('load another random api')
-    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
-    response, responseHeaders = makeRequest(conn, "GET", "/handm/csstemplateasyncmodelview/api/read", headers, None)
-    # print(response)
+    makeRequest(conn, "GET", "/csstemplateasyncmodelview/api/read", headers, None)
 
-    print('load aging totes report')
+    logging.info('Loading another random API...')
+    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
+    makeRequest(conn, "GET", "/handm/csstemplateasyncmodelview/api/read", headers, None)
+
+    logging.info('Loading the Aging Totes Report...')
     headers = [0, 1, 37, 2, 43, 3, 49, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
     params = '{"datasource":"1004028__table","viz_type":"table","slice_id":1002187,"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":10000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE_PST","CASE_CREATE_DATE_PST","MBOLKEY","LOAD_ID","TR_TYPE","SITEID","EXTERNKEY","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","LANE","ROUTE","PACKGROUPKEY","TOTALQTY","COMMENTS"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
     BAxHeaderTable[61] = ('Content-Length', str(len(params)))
-    response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", headers, params)
+    response = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", headers, params)
     atr = json.loads(response)
     return atr
 
@@ -803,7 +801,7 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace):
     # print('exit', threadID)
     pass
 
-def processExcel(workBook: openpyxl.Workbook):
+def processExcel(workBook: openpyxl.Workbook) -> List:
     records = []
     all_columns = [
         "ORDER_CREATE_DATE_PST",
@@ -908,14 +906,14 @@ def main() -> None:
         except FileNotFoundError as e:
             logging.exception('File name not valid')
             logging.info('Falling back on BAx')
-            atr = requestBAx()
+            atr = requestBAx(args.username, args.password)
         except Exception as e:
             logging.exception('File is not valid Excel file')
             logging.info('Falling back on BAx')
-            atr = requestBAx()
+            atr = requestBAx(args.username, args.password)
     else:
         logging.info('No file found, using BAx')
-        atr = requestBAx()
+        atr = requestBAx(args.username, args.password)
 
     if wb != None:
         atr = processExcel(wb)
