@@ -14,7 +14,6 @@ readyTotes = [] # All totes status 160 and up will be stored here and then passe
 masteredTotes = {} # Dictionary for storing only *one* container for each masterbuild
 unmasteredTotes = {} # Same thing but for 161's
 storeBlacklist = ['108', '196'] # Stores that will not be worked on by the script
-f = '' # File handler
 
 headerTable = {
 	0	: ('Host', 'api.security.wmxp008.wmx.sc.xpo.com'),
@@ -70,6 +69,7 @@ def makeRequest(conn, method, path, indexes, payload):
     return data
 
 def requestBAx():
+    return
     conn = http.client.HTTPSConnection("bax08s.am.gxo.com", 443)
 
     headers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
@@ -749,21 +749,63 @@ def formatExcelSheet(workBook):
             row += 1
             cellName = 'M' + str(row)
 
-def run(threadID: int, logLock):
+def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace):
+    # Apparently, threaded functions don't display exceptions normally, so
+    # I'm encapsulating the entire function in a try catch block to fix that.
+    try:
+        pass
+
+        
+    except Exception as e:
+        print(e)
+    return
+
     global f
-    print('here1', threadID)
-    with logLock:
-        print('inside lock')
-        try:
-            with open('output.txt', 'a') as f:
-                f.write(str(threadID))
-                f.close()
-        except Exception as e:
-            print(e)
-            print('Fucked up')
-        logging.debug('Starting thread %s', threadID)
-        print('leaving lock')
-    print('exit', threadID)
+    #os.chdir('C:/Users/asorialimon/Documents/WMX-active')
+    f = open('output.txt', 'w')
+
+    # Open Excel sheet
+    wb = openpyxl.load_workbook(filename = 'Resources/totes.xlsx')
+    sheet_ranges = wb['Sheet1']
+    formatExcelSheet(wb)
+
+    # Establish WMx initial connection
+    # conn = initWMx()
+    # dummyLoad = getNewLoadID(conn)
+
+    #handleAllTotes(conn, wb)
+    #handle_118(conn)
+
+    # Master 161s and add to loading list
+    for row in unmasteredTotes:
+        readyTotes.append(masterTotes(conn, unmasteredTotes[row]))
+
+    # Add 165s to loading list
+    for row in masteredTotes:
+        readyTotes.append(masteredTotes[row])
+
+    # If we have selected a Load_ID for loading
+    # if dummyLoad != '':
+    #     loadTotes(conn, dummyLoad, readyTotes)
+
+    wb.save(filename = 'Resources/otr.xlsx')
+    # conn.close()
+    # f.close()
+    ##############################################
+    # global f
+    # print('here1', threadID)
+    # with logLock:
+    #     print('inside lock')
+    #     try:
+    #         with open('output.txt', 'a') as f:
+    #             f.write(str(threadID))
+    #             f.close()
+    #     except Exception as e:
+    #         print(e)
+    #         print('Fucked up')
+    #     logging.debug('Starting thread %s', threadID)
+    #     print('leaving lock')
+    # print('exit', threadID)
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -777,9 +819,16 @@ def init_argparse() -> argparse.ArgumentParser:
         version = f"{parser.prog} version 1.0.0"
     )
     parser.add_argument(
-        "-f", "--format",
-        action = 'store_true',
-        help='Format otr into excel sheet.'
+        "-u", "--username",
+        type=str,
+        required=True,
+        help='WMx username to login.'
+    )
+    parser.add_argument(
+        "-p", "--password",
+        type=str,
+        required=True,
+        help='WMx password to login.'
     )
     parser.add_argument(
         '-l', '--loadid',
@@ -790,6 +839,16 @@ def init_argparse() -> argparse.ArgumentParser:
         '-t', '--threads',
         type=int,
         help='Number of threads this script will generate.'
+    )
+    parser.add_argument(
+        "-e", "--excelfile",
+        type=str,
+        help='Excel file containing Aging Totes Report to be processed and loaded to dummy load. If left empty, script will directly grab ATR from Bax.'
+    )
+    parser.add_argument(
+        "-f", "--format",
+        action = 'store_true',
+        help='Format BAx Aging Totes Report into Excel sheet.'
     )
     return parser
 
@@ -802,11 +861,33 @@ def main() -> None:
     args = parser.parse_args()
     logging.debug('args = %s', args)
 
+    # Load ATR
+    if args.excelfile != None:
+        # Check to see if the filename is valid
+        try:
+            with open(args.excelfile, 'r') as f:
+                pass
+            wb = openpyxl.load_workbook(filename = args.excelfile)
+        except FileNotFoundError as e:
+            logging.exception('File name not valid')
+            logging.info('Falling back on BAx')
+            requestBAx()
+        except Exception as e:
+            logging.exception('File is not valid Excel file')
+            logging.info('Falling back on BAx')
+            requestBAx()
+    else:
+        logging.info('No file found, using BAx')
+        requestBAx()
+
+    # sheet_ranges = wb['Sheet1']
+    # formatExcelSheet(wb)
+
     # Create threads
     logLock = threading.Lock()
     if args.threads is not None and args.threads > 0:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-            executor.map(lambda x: run(x, logLock), range(args.threads))
+            executor.map(lambda x: run(x, logLock, args), range(args.threads))
 
 if __name__ == '__main__':
     main()
