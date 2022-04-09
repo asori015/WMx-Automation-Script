@@ -1,4 +1,5 @@
 import http, http.client
+import sys
 import openpyxl
 import threading
 import concurrent.futures
@@ -110,17 +111,7 @@ def requestBAx():
     BAxHeaderTable[61] = ('Content-Length', str(len(params)))
     response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", headers, params)
     atr = json.loads(response)
-    # print(atr['data']['records'])
-    # [{'ORDER_CREATE_DATE_PST': '04/04/2022 10:48 PM', 'CASE_CREATE_DATE_PST': '04/05/2022 12:31 AM', 'MBOLKEY': None, 'LOAD_ID': None, 'TR_TYPE': None, 'SITEID': 'ONT005', 'EXTERNKEY': 'D159283090', 'ORDERKEY': '0004172683', 'CS_ID': '0012956710', 'SSCC': '00273129824818208135', 'CONT_KEY': None, 'MASTER_CONTAINERKEY': None, 'CARRIER': 'USLAX-GUMA', 'PICK_METHOD': 'GO', 'LANE': '03-04', 'ROUTE': 'VIA_SP', 'PACKGROUPKEY': 'US020200_C', 'TOTALQTY': None, 'COMMENTS': '118 - CONTACT IT SUPPORT TO UNALLOCATE CASE'},
-    statuses = {}
-    for record in atr['data']['records']:
-        if record['COMMENTS'] not in statuses:
-            statuses[record['COMMENTS']] = 1
-        else:
-            statuses[record['COMMENTS']] += 1
-    for i in statuses:
-        print(i, statuses[i])
-        pass
+    return atr
 
 def initWMx():
     print('Initializing WMx connection')
@@ -812,6 +803,43 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace):
     # print('exit', threadID)
     pass
 
+def processExcel(workBook: openpyxl.Workbook):
+    records = []
+    all_columns = [
+        "ORDER_CREATE_DATE_PST",
+        "CASE_CREATE_DATE_PST",
+        "MBOLKEY",
+        "LOAD_ID",
+        "TR_TYPE",
+        "SITEID",
+        "EXTERNKEY",
+        "ORDERKEY",
+        "CS_ID",
+        "SSCC",
+        "CONT_KEY",
+        "MASTER_CONTAINERKEY",
+        "CARRIER",
+        "PICK_METHOD",
+        "LANE",
+        "ROUTE",
+        "PACKGROUPKEY",
+        "TOTALQTY",
+        "COMMENTS"
+    ]
+    try:
+        currentSheet = workBook['Sheet1']
+    except:
+        logging.exception('"Sheet1" not found, shutting down script process.')
+        sys.exit()
+    for index1, row in enumerate(currentSheet):
+        if index1 == 0:
+            continue
+        record = {}
+        for index2, cell in enumerate(row):
+            record[all_columns[index2]] = cell.value
+            records.append(record)
+    return records
+
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         usage="%(prog)s [OPTION] [FILE]...",
@@ -866,6 +894,9 @@ def main() -> None:
     args = parser.parse_args()
     logging.debug('args = %s', args)
 
+    wb = None
+    atr = None
+
     # Load ATR
     if args.excelfile != None:
         # Check to see if the filename is valid
@@ -874,19 +905,22 @@ def main() -> None:
                 pass
             wb = openpyxl.load_workbook(filename = args.excelfile)
             logging.info('Opened %s', args.excelfile)
-            # formatExcelSheet(wb)
-            # wb.save(filename = 'Resources/otr.xlsx')
         except FileNotFoundError as e:
             logging.exception('File name not valid')
             logging.info('Falling back on BAx')
-            requestBAx()
+            atr = requestBAx()
         except Exception as e:
             logging.exception('File is not valid Excel file')
             logging.info('Falling back on BAx')
-            requestBAx()
+            atr = requestBAx()
     else:
         logging.info('No file found, using BAx')
-        requestBAx()
+        atr = requestBAx()
+
+    if wb != None:
+        atr = processExcel(wb)
+
+    print(atr)
 
     records = [{
         "ORDER_CREATE_DATE_PST": "03/16/2022 10:42 PM",
@@ -931,15 +965,15 @@ def main() -> None:
         "COMMENTS": "118 - CONTACT IT SUPPORT TO UNALLOCATE CASE"
     }]
 
-    newSheet = openpyxl.Workbook()
-    newSheet.title = 'Test' + ' ' + date.today().strftime('%m.%d.%y')
-    # print(newSheet.sheetnames)
-    newSheet['Sheet']['A1'].value = records[0]['COMMENTS']
-    newSheet['Sheet'].column_dimensions['A'].width = len(newSheet['Sheet']['A1'].value)
-    red = openpyxl.styles.PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
-    newSheet['Sheet']['A1'].fill = red
+    # newSheet = openpyxl.Workbook()
+    # newSheet.title = 'Test' + ' ' + date.today().strftime('%m.%d.%y')
+    # # print(newSheet.sheetnames)
+    # newSheet['Sheet']['A1'].value = records[0]['COMMENTS']
+    # newSheet['Sheet'].column_dimensions['A'].width = len(newSheet['Sheet']['A1'].value)
+    # red = openpyxl.styles.PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
+    # newSheet['Sheet']['A1'].fill = red
 
-    newSheet.save(filename = 'Resources/otr.xlsx')
+    # newSheet.save(filename = 'Resources/otr.xlsx')
 
     if args.format:
         logging.info('Generating Open Tote Report Excel sheet')
