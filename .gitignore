@@ -3,3 +3,5 @@
 *.har
 convert.txt
 log.txt
+output.txt
+run.sh

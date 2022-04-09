@@ -749,17 +749,21 @@ def formatExcelSheet(workBook):
             row += 1
             cellName = 'M' + str(row)
 
-def run(threadID: int):
+def run(threadID: int, logLock):
     global f
-    print('here1', threadID * threadID)
+    print('here1', threadID)
     with logLock:
         print('inside lock')
-        f = open('output.txt', 'a')
-        f.write(threadID)
-        f.close()
-        # logger.debug('Starting thread %s', threadID)
-        # print('leaving lock')
-    print('here2', threadID)
+        try:
+            with open('output.txt', 'a') as f:
+                f.write(str(threadID))
+                f.close()
+        except Exception as e:
+            print(e)
+            print('Fucked up')
+        logging.debug('Starting thread %s', threadID)
+        print('leaving lock')
+    print('exit', threadID)
 
 def init_argparse() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
@@ -789,8 +793,6 @@ def init_argparse() -> argparse.ArgumentParser:
     )
     return parser
 
-logLock = threading.Lock()
-
 def main() -> None:
     # Set up logging for this script
     logging.basicConfig(format='(%(name)s - %(levelname)s) %(message)s', level=logging.DEBUG, filename='log.txt', filemode='w')
@@ -801,14 +803,10 @@ def main() -> None:
     logging.debug('args = %s', args)
 
     # Create threads
-    logging.debug('args.threads = %s', args.threads)
-    # logLock = threading.Lock()
+    logLock = threading.Lock()
     if args.threads is not None and args.threads > 0:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-            # executor.submit(run, 0, [logLock])
-            executor.map(run, range(args.threads))
+            executor.map(lambda x: run(x, logLock), range(args.threads))
 
 if __name__ == '__main__':
     main()
-
-# f.close()
