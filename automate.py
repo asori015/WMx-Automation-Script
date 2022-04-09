@@ -708,7 +708,7 @@ def formatExcelSheet(workBook):
     yellow = openpyxl.styles.PatternFill(fill_type='solid', start_color='FFFF00', end_color='FFFF00')
     green = openpyxl.styles.PatternFill(fill_type='solid', start_color='00B050', end_color='00B050')
     currentSheet = workBook['Sheet1']
-    currentSheet.column_dimensions['C'].width = len('PROCESSED, ASSUMED SHIPPED ')
+    currentSheet.column_dimensions['C'].width = len('PROCESSED, ASSUMED SHIPPED  ')
     currentSheet['C1'] = 'NOTES'
 
     # Color code every row based on the status it has
@@ -873,6 +873,9 @@ def main() -> None:
             with open(args.excelfile, 'r') as f:
                 pass
             wb = openpyxl.load_workbook(filename = args.excelfile)
+            logging.info('Opened %s', args.excelfile)
+            # formatExcelSheet(wb)
+            # wb.save(filename = 'Resources/otr.xlsx')
         except FileNotFoundError as e:
             logging.exception('File name not valid')
             logging.info('Falling back on BAx')
@@ -884,6 +887,59 @@ def main() -> None:
     else:
         logging.info('No file found, using BAx')
         requestBAx()
+
+    records = [{
+        "ORDER_CREATE_DATE_PST": "03/16/2022 10:42 PM",
+        "CASE_CREATE_DATE_PST": "03/17/2022 07:31 AM",
+        "MBOLKEY": None,
+        "LOAD_ID": None,
+        "TR_TYPE": None,
+        "SITEID": "ONT005",
+        "EXTERNKEY": "D156495838",
+        "ORDERKEY": "0003831701",
+        "CS_ID": "0012094552",
+        "SSCC": "00273129824810015656",
+        "CONT_KEY": None,
+        "MASTER_CONTAINERKEY": None,
+        "CARRIER": "USLAX-GUMA",
+        "PICK_METHOD": "GO",
+        "LANE": "05-06",
+        "ROUTE": "VIA_SP",
+        "PACKGROUPKEY": "US063800_J",
+        "TOTALQTY": None,
+        "COMMENTS": "118 - CONTACT IT SUPPORT TO UNALLOCATE CASE"
+    },
+    {
+        "ORDER_CREATE_DATE_PST": "03/16/2022 10:42 PM",
+        "CASE_CREATE_DATE_PST": "03/17/2022 07:31 AM",
+        "MBOLKEY": None,
+        "LOAD_ID": None,
+        "TR_TYPE": None,
+        "SITEID": "ONT005",
+        "EXTERNKEY": "D156495838",
+        "ORDERKEY": "0003831701",
+        "CS_ID": "0012094553",
+        "SSCC": "00273129824810015663",
+        "CONT_KEY": None,
+        "MASTER_CONTAINERKEY": None,
+        "CARRIER": "USLAX-GUMA",
+        "PICK_METHOD": "GO",
+        "LANE": "05-06",
+        "ROUTE": "VIA_SP",
+        "PACKGROUPKEY": "US063800_J",
+        "TOTALQTY": None,
+        "COMMENTS": "118 - CONTACT IT SUPPORT TO UNALLOCATE CASE"
+    }]
+
+    newSheet = openpyxl.Workbook()
+    newSheet.title = 'Test' + ' ' + date.today().strftime('%m.%d.%y')
+    # print(newSheet.sheetnames)
+    newSheet['Sheet']['A1'].value = records[0]['COMMENTS']
+    newSheet['Sheet'].column_dimensions['A'].width = len(newSheet['Sheet']['A1'].value)
+    red = openpyxl.styles.PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
+    newSheet['Sheet']['A1'].fill = red
+
+    newSheet.save(filename = 'Resources/otr.xlsx')
 
     if args.format:
         logging.info('Generating Open Tote Report Excel sheet')
