@@ -1,4 +1,4 @@
-import http, http.client
+import http.client
 import sys
 import openpyxl
 import threading
@@ -7,9 +7,29 @@ import argparse
 import json
 import gzip
 import re
-import functools
-from datetime import date
 import logging
+
+all_columns = [
+    "ORDER_CREATE_DATE_PST",
+    "CASE_CREATE_DATE_PST",
+    "MBOLKEY",
+    "LOAD_ID",
+    "TR_TYPE",
+    "SITEID",
+    "EXTERNKEY",
+    "ORDERKEY",
+    "CS_ID",
+    "SSCC",
+    "CONT_KEY",
+    "MASTER_CONTAINERKEY",
+    "CARRIER",
+    "PICK_METHOD",
+    "LANE",
+    "ROUTE",
+    "PACKGROUPKEY",
+    "TOTALQTY",
+    "COMMENTS"
+]
 
 WMxHeaderTable = {
 	0	: ('Host', 'api.security.wmxp008.wmx.sc.xpo.com'),
@@ -68,6 +88,7 @@ def makeRequest(conn, method, path, indexes, payload):
     return data
 
 def requestBAx(username: str, password: str) -> list:
+    import functools
     conn = http.client.HTTPSConnection("bax08s.am.gxo.com", 443)
     logging.info('Connected to BAx')
 
@@ -105,7 +126,7 @@ def requestBAx(username: str, password: str) -> list:
     atr = json.loads(response)
     return atr['data']['records']
 
-def initWMx():
+def initWMx() -> http.client.HTTPConnection:
     print('Initializing WMx connection')
     conn = http.client.HTTPConnection("172.19.45.163", 80)
     
@@ -683,59 +704,6 @@ def handleAllTotes(conn, wb):
             if status != 'COM':
                 print('Tote status ' + status + ' is not handled by this script.')
 
-def formatExcelSheet(workBook):
-    print('Formatting Excel Sheet')
-
-    splitPoints = set()
-    red = openpyxl.styles.PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
-    yellow = openpyxl.styles.PatternFill(fill_type='solid', start_color='FFFF00', end_color='FFFF00')
-    green = openpyxl.styles.PatternFill(fill_type='solid', start_color='00B050', end_color='00B050')
-    currentSheet = workBook['Sheet1']
-    currentSheet.column_dimensions['C'].width = len('PROCESSED, ASSUMED SHIPPED  ')
-    currentSheet['C1'] = 'NOTES'
-
-    # Color code every row based on the status it has
-    for count, row in enumerate(currentSheet):
-        if count == 0:
-            continue
-        status = row[18].value[:3]
-        if status < '135':
-            for cell in row:
-                cell.fill = red
-            row[2].value = 'NEEDS IT SUPPORT'
-        elif status < '180':
-            for cell in row:
-                cell.fill = yellow
-            row[2].value = 'PROCESSED, ASSUMED SHIPPED'
-        else:
-            for cell in row:
-                cell.fill = green
-            if row[2].value == None:
-                row[2].value = 'ON DOCK'
-
-        splitPoint = row[12].value[2:5]
-        splitPoints.add(splitPoint)
-
-    # Delete all sheets except for 'Sheet 1'
-    for sheet in workBook:
-        if sheet.title != 'Sheet1':
-            del workBook[sheet.title]
-
-    # Copy 'Sheet1' for every splitpoint and delete all rows that arn't for that splitpoint
-    for splitPoint in sorted(splitPoints):
-        print('Formating ' + splitPoint)
-        newSheet = workBook.copy_worksheet(workBook['Sheet1'])
-        newSheet.title = splitPoint + ' ' + date.today().strftime('%m.%d.%y')
-
-        row = 2
-        cellName = 'M' + str(row)
-        while newSheet[cellName].value != None:
-            if newSheet[cellName].value[2:5] != splitPoint:
-                newSheet.delete_rows(row)
-                row -= 1
-            row += 1
-            cellName = 'M' + str(row)
-
 def handleTote(conn, record):
     pass
 
@@ -837,27 +805,6 @@ def processATR(atr: list, blacklist: list) -> dict:
 
 def loadExcel(workBook: openpyxl.Workbook) -> list:
     records = []
-    all_columns = [
-        "ORDER_CREATE_DATE_PST",
-        "CASE_CREATE_DATE_PST",
-        "MBOLKEY",
-        "LOAD_ID",
-        "TR_TYPE",
-        "SITEID",
-        "EXTERNKEY",
-        "ORDERKEY",
-        "CS_ID",
-        "SSCC",
-        "CONT_KEY",
-        "MASTER_CONTAINERKEY",
-        "CARRIER",
-        "PICK_METHOD",
-        "LANE",
-        "ROUTE",
-        "PACKGROUPKEY",
-        "TOTALQTY",
-        "COMMENTS"
-    ]
     try:
         currentSheet = workBook['Sheet1']
     except:
@@ -873,6 +820,64 @@ def loadExcel(workBook: openpyxl.Workbook) -> list:
     return records
 
 def dumpExcel(atr: list) -> None:
+    from openpyxl.styles import PatternFill, Border, Side, Font
+    from datetime import datetime
+
+    wb = openpyxl.Workbook()
+    newSheets = {}
+    columWidths = []
+
+    # Creating color and border styles
+    red = PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
+    yellow = PatternFill(fill_type='solid', start_color='FFFF00', end_color='FFFF00')
+    green = PatternFill(fill_type='solid', start_color='00B050', end_color='00B050')
+    thinBorder = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
+
+    for name in all_columns:
+        columWidths.append(len(name))
+    logging.debug(columWidths)
+
+    # Iterate through ATR and assign each record to correct Excel sheet
+    for i, record in enumerate(atr):
+        splitpoint = record['CARRIER']
+
+        # Assign color and note to record
+        color = None
+        if record['COMMENTS'][:3] < '135':
+            color = red
+            if record['MBOLKEY'] == None: record['MBOLKEY'] = 'NEEDS IT SUPPORT'
+        elif record['COMMENTS'][:3] < '180':
+            color = yellow
+            if record['MBOLKEY'] == None: record['MBOLKEY'] = 'PROCESSED, ASSUMED SHIPPED'
+        else:
+            color = green
+            if record['MBOLKEY'] == None: record['MBOLKEY'] = 'ON DOCK'
+
+        # Make new Excel sheet for each splitpoint that exists
+        if splitpoint not in newSheets:
+            newSheets[splitpoint] = {'sheet': wb.create_sheet(splitpoint[2:5] + ' ' + datetime.now().strftime('%m.%d.%y')), 'index': 0}
+            for j, name in enumerate(all_columns):
+                cellName = chr(j + ord('A')) + '1'
+                newSheets[splitpoint]['sheet'][cellName].value = name
+                newSheets[splitpoint]['sheet'][cellName].border = thinBorder
+                newSheets[splitpoint]['sheet'][cellName].font = Font(b = True)
+            newSheets[splitpoint]['sheet']['C1'] = 'NOTES'
+
+        # Add record to correct Excel sheet
+        for j, key in enumerate(record):
+            cellName = chr(j + ord('A')) + str(newSheets[splitpoint]['index'] + 2)
+            newSheets[splitpoint]['sheet'][cellName].value = record[key]
+            newSheets[splitpoint]['sheet'][cellName].fill = color
+            if len(str(newSheets[splitpoint]['sheet'][cellName].value)) > columWidths[j]: 
+                columWidths[j] = len(str(newSheets[splitpoint]['sheet'][cellName].value))
+        newSheets[splitpoint]['index'] += 1
+    logging.debug(columWidths)
+
+    for sheet in wb:
+        for i in range(len(all_columns)):
+            sheet.column_dimensions[chr(ord('A') + i)].width = columWidths[i]
+
+    wb.save(filename = 'Resources/OTR ' + datetime.now().strftime('%m.%d.%y %H.%M.%S') + '.xlsx')
     return
 
 def getAgingToteReport(args: argparse.Namespace) -> list:
@@ -966,16 +971,8 @@ def main() -> None:
     logging.debug(processedRecords)
 
     if args.format:
-        # newSheet = openpyxl.Workbook()
-        # newSheet.title = 'Test' + ' ' + date.today().strftime('%m.%d.%y')
-        # # print(newSheet.sheetnames)
-        # newSheet['Sheet']['A1'].value = records[0]['COMMENTS']
-        # newSheet['Sheet'].column_dimensions['A'].width = len(newSheet['Sheet']['A1'].value)
-        # red = openpyxl.styles.PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
-        # newSheet['Sheet']['A1'].fill = red
-
-        # newSheet.save(filename = 'Resources/otr.xlsx')
         logging.info('Generating Open Tote Report Excel sheet')
+        dumpExcel(atr)
 
     dummyLoad = args.loadid
     if dummyLoad == None or len(dummyLoad) != 10:
