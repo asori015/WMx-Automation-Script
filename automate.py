@@ -825,17 +825,13 @@ def dumpExcel(atr: list) -> None:
 
     wb = openpyxl.Workbook()
     newSheets = {}
-    columWidths = []
+    colunmWidths = [25.29, 23.29, 29.14, 11.29, 8.14, 7.57, 11.57, 11.29, 11.29, 22.57, 11.29, 23.29, 12.29, 13.86, 5.43, 6.57, 15.14, 9.86, 255]
 
     # Creating color and border styles
     red = PatternFill(fill_type='solid', start_color='FF0000', end_color='FF0000')
     yellow = PatternFill(fill_type='solid', start_color='FFFF00', end_color='FFFF00')
     green = PatternFill(fill_type='solid', start_color='00B050', end_color='00B050')
     thinBorder = Border(left=Side(style='thin'), right=Side(style='thin'), top=Side(style='thin'), bottom=Side(style='thin'))
-
-    for name in all_columns:
-        columWidths.append(len(name))
-    logging.debug(columWidths)
 
     # Iterate through ATR and assign each record to correct Excel sheet
     for i, record in enumerate(atr):
@@ -860,7 +856,7 @@ def dumpExcel(atr: list) -> None:
                 cellName = chr(j + ord('A')) + '1'
                 newSheets[splitpoint]['sheet'][cellName].value = name
                 newSheets[splitpoint]['sheet'][cellName].border = thinBorder
-                newSheets[splitpoint]['sheet'][cellName].font = Font(b = True)
+                newSheets[splitpoint]['sheet'][cellName].font = Font(b=True)
             newSheets[splitpoint]['sheet']['C1'] = 'NOTES'
 
         # Add record to correct Excel sheet
@@ -868,14 +864,10 @@ def dumpExcel(atr: list) -> None:
             cellName = chr(j + ord('A')) + str(newSheets[splitpoint]['index'] + 2)
             newSheets[splitpoint]['sheet'][cellName].value = record[key]
             newSheets[splitpoint]['sheet'][cellName].fill = color
-            if len(str(newSheets[splitpoint]['sheet'][cellName].value)) > columWidths[j]: 
-                columWidths[j] = len(str(newSheets[splitpoint]['sheet'][cellName].value))
         newSheets[splitpoint]['index'] += 1
-    logging.debug(columWidths)
-
     for sheet in wb:
         for i in range(len(all_columns)):
-            sheet.column_dimensions[chr(ord('A') + i)].width = columWidths[i]
+            sheet.column_dimensions[chr(ord('A') + i)].width = colunmWidths[i]
 
     wb.save(filename = 'Resources/OTR ' + datetime.now().strftime('%m.%d.%y %H.%M.%S') + '.xlsx')
     return
