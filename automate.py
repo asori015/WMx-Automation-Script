@@ -10,7 +10,6 @@ import re
 import functools
 from datetime import date
 import logging
-import time
 
 WMxHeaderTable = {
 	0	: ('Host', 'api.security.wmxp008.wmx.sc.xpo.com'),
@@ -737,30 +736,36 @@ def formatExcelSheet(workBook):
             row += 1
             cellName = 'M' + str(row)
 
+def handleTote(conn, record):
+    pass
+
 def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, processedRecords: dict) -> None:
     # Apparently, threaded functions don't display exceptions normally, so
-    # I'm encapsulating the entire function in a try catch block to fix that.
+    # I'm encapsulating the entire function in a try-catch block to fix that.
     try:
+        conn = initWMx()
         for index in range(len(processedRecords['unprocessedTotes'])):
+            record = None
             with logLock:
                 record = processedRecords['unprocessedTotes'][index]
                 if record['threadid'] == 0:
-                    print(threadID)
-                    print(record['record']['SSCC'])
+                    # print(threadID)
+                    # print(record['record']['SSCC'])
                     record['threadid'] = threadID
-            time.sleep(0.1)
+
+            if record['threadid'] == threadID:
+                handleTote()
+
+        for index in range(len(processedRecords['unloadedTotes'])):
+            with logLock:
+                record = processedRecords['unloadedTotes'][index]
+                if record['threadid'] == 0:
+                    # print(threadID)
+                    # print(record['record']['SSCC'])
+                    record['threadid'] = threadID
     except Exception as e:
         logging.exception(e)
     return
-
-    global f
-    #os.chdir('C:/Users/asorialimon/Documents/WMX-active')
-    f = open('output.txt', 'w')
-
-    # Open Excel sheet
-    wb = openpyxl.load_workbook(filename = 'Resources/totes.xlsx')
-    sheet_ranges = wb['Sheet1']
-    formatExcelSheet(wb)
 
     # Establish WMx initial connection
     # conn = initWMx()
@@ -830,7 +835,7 @@ def processATR(atr: list, blacklist: list) -> dict:
 
     return {'unprocessedTotes': unprocessedTotes, 'unloadedTotes': unloadedTotes}
 
-def processExcel(workBook: openpyxl.Workbook) -> list:
+def loadExcel(workBook: openpyxl.Workbook) -> list:
     records = []
     all_columns = [
         "ORDER_CREATE_DATE_PST",
@@ -867,6 +872,9 @@ def processExcel(workBook: openpyxl.Workbook) -> list:
         records.append(record)
     return records
 
+def dumpExcel(atr: list) -> None:
+    return
+
 def getAgingToteReport(args: argparse.Namespace) -> list:
     wb = None
     atr = None
@@ -892,7 +900,7 @@ def getAgingToteReport(args: argparse.Namespace) -> list:
         atr = requestBAx(args.username, args.password)
 
     if wb != None:
-        atr = processExcel(wb)
+        atr = loadExcel(wb)
     return atr
 
 def init_argparse() -> argparse.ArgumentParser:
@@ -969,6 +977,11 @@ def main() -> None:
         # newSheet.save(filename = 'Resources/otr.xlsx')
         logging.info('Generating Open Tote Report Excel sheet')
 
+    dummyLoad = args.loadid
+    if dummyLoad == None or len(dummyLoad) != 10:
+        conn = initWMx()
+        dummyLoad = getNewLoadID(conn)
+        conn.close()
 
     # Create threads
     logLock = threading.Lock()
@@ -978,6 +991,7 @@ def main() -> None:
             executor.map(lambda x: run(x + 1, logLock, args, processedRecords), range(args.threads))
 
     logging.debug(processedRecords)
+    return
 
 if __name__ == '__main__':
     main()
