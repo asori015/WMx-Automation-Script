@@ -758,45 +758,6 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, proces
         logging.exception(e)
     return
 
-    # Establish WMx initial connection
-    # conn = initWMx()
-    # dummyLoad = getNewLoadID(conn)
-
-    #handleAllTotes(conn, wb)
-    #handle_118(conn)
-
-    # Master 161s and add to loading list
-    for row in unmasteredTotes:
-        readyTotes.append(masterTotes(conn, unmasteredTotes[row]))
-
-    # Add 165s to loading list
-    for row in masteredTotes:
-        readyTotes.append(masteredTotes[row])
-
-    # If we have selected a Load_ID for loading
-    # if dummyLoad != '':
-    #     loadTotes(conn, dummyLoad, readyTotes)
-
-    wb.save(filename = 'Resources/otr.xlsx')
-    # conn.close()
-    # f.close()
-    ##############################################
-    # global f
-    # print('here1', threadID)
-    # with logLock:
-    #     print('inside lock')
-    #     try:
-    #         with open('output.txt', 'a') as f:
-    #             f.write(str(threadID))
-    #             f.close()
-    #     except Exception as e:
-    #         print(e)
-    #         print('Fucked up')
-    #     logging.debug('Starting thread %s', threadID)
-    #     print('leaving lock')
-    # print('exit', threadID)
-    pass
-
 def processATR(atr: list, blacklist: list) -> dict:
     unprocessedTotes = []
     unloadedTotes = []
