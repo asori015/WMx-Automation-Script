@@ -7,6 +7,7 @@ import argparse
 import json
 import gzip
 import re
+from datetime import datetime
 import logging
 
 all_columns = [
@@ -62,6 +63,44 @@ WMxHeaderTable = {
 }
 
 BAxHeaderTable = {
+    0	: ('Host', 'bax08s.am.gxo.com'),
+	1	: ('Connection', 'keep-alive'),
+	2	: ('sec-ch-ua', '" Not A;Brand";v="99", "Chromium";v="99", "Google Chrome";v="99"'),
+	3	: ('sec-ch-ua-mobile', '?0'),
+	4	: ('sec-ch-ua-platform', '"Windows"'),
+	5	: ('Upgrade-Insecure-Requests', '1'),
+	6	: ('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/99.0.4844.82 Safari/537.36'),
+	7	: ('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9'),
+	8	: ('Sec-Fetch-Site', 'none'),
+	9	: ('Sec-Fetch-Mode', 'navigate'),
+	10	: ('Sec-Fetch-User', '?1'),
+	11	: ('Sec-Fetch-Dest', 'document'),
+	12	: ('Accept-Encoding', 'gzip, deflate, br'),
+	13	: ('Accept-Language', 'en-US,en;q=0.9'),
+	14	: ('Origin', 'https://bax08s.am.gxo.com'),
+	15	: ('Accept', 'text/css,*/*;q=0.1'),
+	16	: ('Sec-Fetch-Site', 'same-origin'),
+	29	: ('Sec-Fetch-Mode', 'no-cors'),
+	30	: ('Sec-Fetch-Dest', 'style'),
+	31	: ('Referer', 'https://bax08s.am.gxo.com/handm/login/'),
+	32	: ('Cookie', 'session=eyJjc3JmX3Rva2VuIjoiN2U3NjIzNmJkYjU5YmNkMjc2YTExODQ4ZTc4YzhmMjg3N2RiYzBmYyJ9.Ykvx4w.ZZkcuqhmMP3m7QWqGoD3b-DR3u4; _client=handm; NSC_WTsw_l8t-johsftt.td.yqp.dpn443=ffffffffaf1b3d1045525d5f4f58455e445a4a42378b'),
+	33	: ('Accept', '*/*'),
+	34	: ('Sec-Fetch-Dest', 'script'),
+	35	: ('Accept', 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'),
+	36	: ('Sec-Fetch-Dest', 'image'),
+	37	: ('Content-Length', '0'),
+	38	: ('Cache-Control', 'max-age=0'),
+	39	: ('Content-Type', 'application/x-www-form-urlencoded'),
+	40	: ('Cookie', '_client=handm; NSC_WTsw_l8t-johsftt.td.yqp.dpn443=ffffffffaf1b3d1045525d5f4f58455e445a4a42378b; session=.eJwljktuwzAMBe-idRbUj6RyGUOknlqjbQrYcTZF7143Wb4B3mB-gu_bXO7fH7iFaxAIp8w2rDbzkYR7jFoUoq4zqcgwp-nhEpa5YX8P1_t24BKOHdutf-F0fD7WtwPb2sMLL-s4aU5ZEuv_8bnBUlFTajh1SizZtbVJKihkVbjAoqVCfVSZRtKpWItEDgxI1C7V1aUxxwTqYLYCgmaNzTh28n4WVzZvM3OmEv3UWXGNhjLC7x-mZEhQ.Ykvy1Q.Qb1KS8rnORQsJhCTafzeX7nPxIA'),
+	41	: ('Referer', 'https://bax08s.am.gxo.com/handm/superset/dashboard/1000000/'),
+	42	: ('Cookie', '_client=handm; NSC_WTsw_l8t-johsftt.td.yqp.dpn443=ffffffffaf1b3d1045525d5f4f58455e445a4a42378b; session=.eJwlj0tuwzAMRO-idRbUj6RyGYOkqNaomwB23E3Ru1dJljPAPLz5DXbsY3ncv_wWroGcMGXUrrWp9UQoMXJhJzYeiYm6GgwLl7CM3Y_PcH3sp1_Cefh-k2-fjO1n_Th9XyW862Xts80pU0J-Dl_ZkarXlJpPHANSNm5tAJMX0EpYXKOmAtIrDQUSKNoigLl3p8hC1dioIcbkII6oxcE5c2yKUcBkGldUayNjhhJt4rQYR_XSp8h2N9mexvP63z-4X0yB.Ykvy2g.PrThQrvdHDybV1FCWXeaVjjGDow'),
+	43	: ('X-CSRFToken', 'IjdlNzYyMzZiZGI1OWJjZDI3NmExMTg0OGU3OGM4ZjI4NzdkYmMwZmMi.Ykvy2g.yIkUUMhCbgy9ltl921oYWEFBLyM'),
+	44	: ('Sec-Fetch-Mode', 'same-origin'),
+	45	: ('Sec-Fetch-Dest', 'empty'),
+	46	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundary7XXhQdTyIALZLRcX'),
+	48	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundaryeoW7XBYpazf0Y0uG'),
+	49	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundary9nA69TfFQg8qZOib'),
+	50	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundaryRLLy0TetMfhPMq50')
 }
 
 def addThrees(value):
@@ -70,22 +109,21 @@ def addThrees(value):
         newValue += '3' + row
     return newValue
 
-def getHeaders(indexes):
+def getHeaders(indexes: list, headerTable: dict) -> dict:
     headerDict = {}
     for row in indexes:
-        headerDict.update({WMxHeaderTable[row][0]: WMxHeaderTable[row][1]})
+        headerDict.update({headerTable[row][0]: headerTable[row][1]})
     return headerDict
 
-def makeRequest(conn, method, path, indexes, payload):
-    conn.request(method, path, payload, getHeaders(indexes))
-    res = conn.getresponse()
-    f.write(str(res.status) + ', ' + str(res.reason) + '\n')
-    data = res.read()
-    try:
-        f.write(method + " " + path + "\n" + data.decode('utf-8') + '\n')
-    except:
-        f.write(method + " " + path + "\n" + gzip.decompress(data).decode('utf-8') + '\n')
-    return data
+def makeRequest(conn, method, path, headers: dict, payload: str):
+	conn.request(method, path, payload, headers)
+	res = conn.getresponse()
+	print(str(res.status) + ', ' + str(res.reason))
+	data = res.read()
+	try:
+		return data.decode('utf-8'), res.headers
+	except:
+		return gzip.decompress(data).decode('utf-8'), res.headers
 
 def requestBAx(username: str, password: str) -> list:
     import functools
@@ -93,7 +131,7 @@ def requestBAx(username: str, password: str) -> list:
     logging.info('Connected to BAx')
 
     headers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-    response, responseHeaders = makeRequest(conn, "GET", "/handm/login/", headers, None)
+    response, responseHeaders = makeRequest(conn, "GET", "/handm/login/", getHeaders(headers, BAxHeaderTable), None)
     csrfToken = re.findall(r'csrf.*value="(.*)">', response)[0]
     cookieHeaders = re.findall(r'Set-Cookie: (.*);', str(responseHeaders))
     cookieHeader = functools.reduce(lambda a, b: a + b[:b.find(';')] + '; ', cookieHeaders, '')[:-2]
@@ -104,25 +142,25 @@ def requestBAx(username: str, password: str) -> list:
     BAxHeaderTable[32] = ('Cookie', cookieHeader)
     
     logging.info('Logging into to BAx...')
-    makeRequest(conn, "POST", "/handm/login/", headers, params)
+    makeRequest(conn, "POST", "/handm/login/", getHeaders(headers, BAxHeaderTable), params)
 
     logging.info('Loading main dashboard...')
     headers = [0, 1, 38, 5, 6, 7, 16, 9, 10, 11, 2, 3, 4, 31, 12, 13, 40]
-    makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", headers, None)
+    makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", getHeaders(headers, BAxHeaderTable), None)
     
     logging.info('Loading random API...')
     headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
-    makeRequest(conn, "GET", "/csstemplateasyncmodelview/api/read", headers, None)
+    makeRequest(conn, "GET", "/csstemplateasyncmodelview/api/read", getHeaders(headers, BAxHeaderTable), None)
 
     logging.info('Loading another random API...')
     headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
-    makeRequest(conn, "GET", "/handm/csstemplateasyncmodelview/api/read", headers, None)
+    makeRequest(conn, "GET", "/handm/csstemplateasyncmodelview/api/read", getHeaders(headers, BAxHeaderTable), None)
 
     logging.info('Loading the Aging Totes Report...')
     headers = [0, 1, 37, 2, 43, 3, 49, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
     params = '{"datasource":"1004028__table","viz_type":"table","slice_id":1002187,"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":10000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE_PST","CASE_CREATE_DATE_PST","MBOLKEY","LOAD_ID","TR_TYPE","SITEID","EXTERNKEY","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","LANE","ROUTE","PACKGROUPKEY","TOTALQTY","COMMENTS"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
     BAxHeaderTable[61] = ('Content-Length', str(len(params)))
-    response = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", headers, params)
+    response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", getHeaders(headers, BAxHeaderTable), params)
     atr = json.loads(response)
     return atr['data']['records']
 
@@ -131,87 +169,87 @@ def initWMx() -> http.client.HTTPConnection:
     conn = http.client.HTTPConnection("172.19.45.163", 80)
     
     headers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    params = '{"UserId":"tponce","Psw":"Welcome123456","SiteId":"ONT005"}'
+    params = '{"UserId":"tponce","Psw":"Welcome1234567","SiteId":"ONT005"}'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    response = makeRequest(conn, "POST", "/login", headers, params)
-    WMxHeaderTable[13] = ('Authorization', 'Bearer ' + json.loads(gzip.decompress(response))['Token'])
+    response, responseHeaders = makeRequest(conn, "POST", "/login", getHeaders(headers, WMxHeaderTable), params)
+    WMxHeaderTable[13] = ('Authorization', 'Bearer ' + json.loads(response)['Token'])
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/equipmentgroupdd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/equipmentgroupdd", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/clientdd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/clientdd", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/deviceprinters/5043415753303434", headers, None)
+    makeRequest(conn, "GET", "/queryservice/deviceprinters/5043415753303434", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/userprofile/74706f6e6365", headers, None)
+    makeRequest(conn, "GET", "/queryservice/userprofile/74706f6e6365", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/listboxdd/434c49454e54", headers, None)
+    makeRequest(conn, "GET", "/queryservice/listboxdd/434c49454e54", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/usersearch/57585f434f4e5441494e45525f53484950/434f4e5441494e455253494e474c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/usersearch/57585f434f4e5441494e45525f53484950/434f4e5441494e455253494e474c45", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{"CONTAINERKEY":"0002401084"}'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/queryservice/data/57585f434f4e5441494e45525f53484950/4144445453/66616c7365/31/3330", headers, params)
+    makeRequest(conn, "PUT", "/queryservice/data/57585f434f4e5441494e45525f53484950/4144445453/66616c7365/31/3330", getHeaders(headers, WMxHeaderTable), params)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/searchconfig/57585f434f4e5441494e45525f53484950", headers, None)
+    makeRequest(conn, "GET", "/queryservice/searchconfig/57585f434f4e5441494e45525f53484950", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/listboxdd/434f4e5441494e4552535441545553", headers, None)
+    makeRequest(conn, "GET", "/queryservice/listboxdd/434f4e5441494e4552535441545553", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containerstatusdd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/containerstatusdd", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/cartonizecodesdd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/cartonizecodesdd", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containership/", headers, None)
+    makeRequest(conn, "GET", "/queryservice/containership/", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434f4e5441494e455244454641554c54484549474854", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434f4e5441494e455244454641554c54484549474854", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e54424c4443415054555245494e445543544c4f43", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e54424c4443415054555245494e445543544c4f43", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/usersearch/57585f434f4e5441494e45525f5348495044544c/434f4e5441494e455253494e474c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/usersearch/57585f434f4e5441494e45525f5348495044544c/434f4e5441494e455253494e474c45", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/searchconfig/57585f434f4e5441494e45525f5348495044544c", headers, None)
+    makeRequest(conn, "GET", "/queryservice/searchconfig/57585f434f4e5441494e45525f5348495044544c", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/554944544c5041474553495a45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/554944544c5041474553495a45", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configpropattr/434f4e5441494e455253494e474c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configpropattr/434f4e5441494e455253494e474c45", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/searchconfig/57585f434f4e5441494e45525f5348495044544c", headers, None)
+    makeRequest(conn, "GET", "/queryservice/searchconfig/57585f434f4e5441494e45525f5348495044544c", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configpropattr/434f4e5441494e455253494e474c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configpropattr/434f4e5441494e455253494e474c45", getHeaders(headers, WMxHeaderTable), None)
 
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configpropattr/434f4e5441494e455253494e474c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configpropattr/434f4e5441494e455253494e474c45", getHeaders(headers, WMxHeaderTable), None)
     return conn
 
 def getNewLoadID(conn):
     print('looking for new Dummy Load ID...')
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/4d4f42494c45545241494c45524c4f4144414456534541524348", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/4d4f42494c45545241494c45524c4f4144414456534541524348", getHeaders(headers, WMxHeaderTable), None)
     # Here we get all relevant load IDs and look for the first B05 load that's status 101 New
     headers = [20, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    response = makeRequest(conn, "GET", "/container/activeloads", headers, None)
+    response, responseHeaders = makeRequest(conn, "GET", "/container/activeloads", getHeaders(headers, WMxHeaderTable), None)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/searchconfig/57585f4c4f4144", headers, None)
+    makeRequest(conn, "GET", "/queryservice/searchconfig/57585f4c4f4144", getHeaders(headers, WMxHeaderTable), None)
     #
     activeLoads = json.loads(response)
     dummyLoads = []
@@ -233,19 +271,19 @@ def getNewLoadID(conn):
     headers = [10, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{"LOADID":"' + dummyLoad + '"}'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/queryservice/data/57585f4c4f4144/4144445453/66616c7365/31/3330", headers, params)
+    makeRequest(conn, "PUT", "/queryservice/data/57585f4c4f4144/4144445453/66616c7365/31/3330", getHeaders(headers, WMxHeaderTable), params)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    response = makeRequest(conn, "GET", "/queryservice/load/" + addThrees(dummyLoad), headers, None)
+    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/load/" + addThrees(dummyLoad), getHeaders(headers, WMxHeaderTable), None)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/usersearch/57585f4c4f414444544c/4c4f41444d414e4147454d454e54", headers, None)
+    makeRequest(conn, "GET", "/queryservice/usersearch/57585f4c4f414444544c/4c4f41444d414e4147454d454e54", getHeaders(headers, WMxHeaderTable), None)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/4c4f414444544c42594f52444552", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/4c4f414444544c42594f52444552", getHeaders(headers, WMxHeaderTable), None)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/loadDtlList/" + addThrees(dummyLoad), headers, None)
+    makeRequest(conn, "GET", "/queryservice/loadDtlList/" + addThrees(dummyLoad), getHeaders(headers, WMxHeaderTable), None)
 
     # Updating our chosen load ID with correct values
     response = json.loads(response)
@@ -258,26 +296,26 @@ def getNewLoadID(conn):
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = response
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/isloaddirty", headers, params)
+    makeRequest(conn, "PUT", "/container/isloaddirty", getHeaders(headers, WMxHeaderTable), params)
     #
     headers = [26, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = response
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/datamodify/saveload", headers, params)
+    makeRequest(conn, "PUT", "/datamodify/saveload", getHeaders(headers, WMxHeaderTable), params)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/load/" + addThrees(dummyLoad), headers, None)
+    makeRequest(conn, "GET", "/queryservice/load/" + addThrees(dummyLoad), getHeaders(headers, WMxHeaderTable), None)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/4c4f414444544c42594f52444552", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/4c4f414444544c42594f52444552", getHeaders(headers, WMxHeaderTable), None)
     #
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/loadDtlList/" + addThrees(dummyLoad), headers, None)
+    makeRequest(conn, "GET", "/queryservice/loadDtlList/" + addThrees(dummyLoad), getHeaders(headers, WMxHeaderTable), None)
     return dummyLoad
 
 def handle_118(conn):
-    print('TODO')
-    return
+    print('TODO: 118')
+    return None
     # print('118\'s are handled in')
     # This request just fails...
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
@@ -286,7 +324,7 @@ def handle_118(conn):
     headers = [10, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{"STATUS":"102|105|106|112|115|116|118|101"}'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    response = makeRequest(conn, "PUT", "/queryservice/data/57585f57415645/4144445453/66616c7365/31/3330", headers, params)
+    response, responseHeaders = makeRequest(conn, "PUT", "/queryservice/data/57585f57415645/4144445453/66616c7365/31/3330", getHeaders(headers, WMxHeaderTable), params)
     #
     response = json.loads(response)
     numberOfWaves = response['Count']
@@ -296,7 +334,7 @@ def handle_118(conn):
         headers = [10, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
         params = '{"STATUS":"102|105|106|112|115|116|118|101"}'
         WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-        response = makeRequest(conn, "PUT", "/queryservice/data/57585f57415645/4144445453/66616c7365/" + addThrees(str(pageNumber)) + "/3330", headers, params)
+        response, responseHeaders = makeRequest(conn, "PUT", "/queryservice/data/57585f57415645/4144445453/66616c7365/" + addThrees(str(pageNumber)) + "/3330", getHeaders(headers, WMxHeaderTable), params)
         #
         response = json.loads(response)
         currentWaves += response['Data']
@@ -311,118 +349,121 @@ def handle_118(conn):
         print(waveKey)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/wavecodefilteroperatorsdd", headers, None)
+        makeRequest(conn, "GET", "/queryservice/wavecodefilteroperatorsdd", getHeaders(headers, WMxHeaderTable), None)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/wavestatusdd", headers, None)
+        makeRequest(conn, "GET", "/queryservice/wavestatusdd", getHeaders(headers, WMxHeaderTable), None)
         #
         # headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
         # params = '{}'
         # lookupHeaders[2] = ('Content-Length', str(len(params)))
-        # response = makeRequest(conn, "PUT", "/waveprocess/updwavestatus/" + addThrees(waveKey), headers, params)
+        # response, responseHeaders = makeRequest(conn, "PUT", "/waveprocess/updwavestatus/" + addThrees(waveKey), headers, params)
         # response = json.loads(response)
         # if response['LINECOUNT'] == 0:
         #     continue
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/wavedetailsbywavekey/" + addThrees(waveKey), headers, None)
+        makeRequest(conn, "GET", "/queryservice/wavedetailsbywavekey/" + addThrees(waveKey), getHeaders(headers, WMxHeaderTable), None)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/usersearch/434f52454f52445f5741564544544c5f5657/57415645", headers, None)
+        makeRequest(conn, "GET", "/queryservice/usersearch/434f52454f52445f5741564544544c5f5657/57415645", getHeaders(headers, WMxHeaderTable), None)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/searchconfig/434f52454f52445f5741564544544c5f5657", headers, None)
+        makeRequest(conn, "GET", "/queryservice/searchconfig/434f52454f52445f5741564544544c5f5657", getHeaders(headers, WMxHeaderTable), None)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/usersearch/57585f4f524445525f43415345/57415645", headers, None)
+        makeRequest(conn, "GET", "/queryservice/usersearch/57585f4f524445525f43415345/57415645", getHeaders(headers, WMxHeaderTable), None)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/searchconfig/57585f4f524445525f43415345", headers, None)
+        makeRequest(conn, "GET", "/queryservice/searchconfig/57585f4f524445525f43415345", getHeaders(headers, WMxHeaderTable), None)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/searchconfig/57585f4f524445525f43415345", headers, None)
+        makeRequest(conn, "GET", "/queryservice/searchconfig/57585f4f524445525f43415345", getHeaders(headers, WMxHeaderTable), None)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/listboxdd/4f52444552535441545553", headers, None)
+        makeRequest(conn, "GET", "/queryservice/listboxdd/4f52444552535441545553", getHeaders(headers, WMxHeaderTable), None)
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        response = makeRequest(conn, "GET", "/queryservice/ordercasebywavekey/" + addThrees(waveKey), headers, None)
+        response, responseHeaders = makeRequest(conn, "GET", "/queryservice/ordercasebywavekey/" + addThrees(waveKey), getHeaders(headers, WMxHeaderTable), None)
         # print(response)
         if len(response) > 2:
             response = json.loads(response)
             casesInWaves += response
         #
         headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/autoprocesswave/" + addThrees(waveKey), headers, None)
+        makeRequest(conn, "GET", "/queryservice/autoprocesswave/" + addThrees(waveKey), getHeaders(headers, WMxHeaderTable), None)
         #
     #
     print(casesInWaves)
     
 def handle_125():
     print('125\'s are handled in Grey Orange. Skipping...')
+    return None
 
 def handle_130():
     print('130\'s are handled in Grey Orange. Skipping...')
+    return None
 
 def handle_135(conn, sscc):
     print('Handling status 135 tote')
     response = ''
     caseID = ''
     containerKey = ''
+
     print('1')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    response = makeRequest(conn, "GET", "/queryservice/order/" +  addThrees(sscc) + "/case", headers, None)
-    caseID = re.findall(r'"CASEID":"(\d*)"', response.decode('utf-8'))[0]
+    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/order/" +  addThrees(sscc) + "/case", getHeaders(headers, WMxHeaderTable), None)
+    caseID = re.findall(r'"CASEID":"(\d*)"', response)[0]
+    
     print('2')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = ''
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    response = makeRequest(conn, "PUT", "/container/opencontainersingle/" + addThrees(caseID) + "/", headers, params)
-    containerKey = response.decode('utf-8')[1:-1]
+    response, responseHeaders = makeRequest(conn, "PUT", "/container/opencontainersingle/" + addThrees(caseID) + "/", getHeaders(headers, WMxHeaderTable), params)
+    containerKey = response[1:-1]
+    
     print('3')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), headers, None)
-    print('4')
-    #This request for whatever reason always gets 404
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), headers, None)
+    makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+    
     print('5')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{}'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/addcasesingle/" + addThrees(containerKey) + "/" + addThrees(caseID) + "/", headers, params)
+    makeRequest(conn, "PUT", "/container/addcasesingle/" + addThrees(containerKey) + "/" + addThrees(caseID) + "/", getHeaders(headers, WMxHeaderTable), params)
+    
     print('6')
     #The response from this query gets fed into the 'iscontainerdirty' request
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    response = makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), headers, None)
+    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
     print('7')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/carrierdd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/carrierdd", getHeaders(headers, WMxHeaderTable), None)
     print('8')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), headers, None)
+    makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
     print('9')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e545041434b4147455459504557495448434152544f4e54595045", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e545041434b4147455459504557495448434152544f4e54595045", getHeaders(headers, WMxHeaderTable), None)
     print('10')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    params = response.decode('utf-8')
+    params = response
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/iscontainerdirty", headers, params)
+    makeRequest(conn, "PUT", "/container/iscontainerdirty", getHeaders(headers, WMxHeaderTable), params)
     print('11: Requesting to close container')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{}'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/closepackedcontainersingle/" + addThrees(containerKey), headers, params)
+    makeRequest(conn, "PUT", "/container/closepackedcontainersingle/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), params)
     print('12')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), headers, None)
+    makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
     print('13')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), headers, None)
+    makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
     print('14')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e545041434b4147455459504557495448434152544f4e54595045", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e545041434b4147455459504557495448434152544f4e54595045", getHeaders(headers, WMxHeaderTable), None)
     return containerKey
 
 def handle_140(conn, sscc):
@@ -430,112 +471,112 @@ def handle_140(conn, sscc):
     return handle_135(conn, sscc) # Status 140 totes function almost the same as status 135 totes
 
 def handle_141(conn, sscc):
-    print('TODO')
-    return
+    print('TODO: 141')
+    return None
     print('Handling status 141 tote')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/orderstatusdd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/orderstatusdd", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/verdoctypedd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/verdoctypedd", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/config/434f5245564552494659/5645524849444544455441494c", headers, None)
+    makeRequest(conn, "GET", "/queryservice/config/434f5245564552494659/5645524849444544455441494c", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configpropattr/564552494649434154494f4e534541524348", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configpropattr/564552494649434154494f4e534541524348", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configpropattr/4f52444552564552494659", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configpropattr/4f52444552564552494659", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configpropattr/434f4e5441494e455253494e474c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configpropattr/434f4e5441494e455253494e474c45", getHeaders(headers, WMxHeaderTable), None)
     # Entering in an SSCC value
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/order/" + addThrees(sscc) + "/case", headers, None)
+    makeRequest(conn, "GET", "/queryservice/order/" + addThrees(sscc) + "/case", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '""'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/verification/create/43415345/" + addThrees(sscc), headers, params)
+    makeRequest(conn, "PUT", "/verification/create/43415345/" + addThrees(sscc), getHeaders(headers, WMxHeaderTable), params)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    response = makeRequest(conn, "GET", "/queryservice/order/" + addThrees(sscc) + "/case", headers, None)
+    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/order/" + addThrees(sscc) + "/case", getHeaders(headers, WMxHeaderTable), None)
     response = json.loads(response)
     caseID = response['CASEID']
     orderKey = response['ORDERKEY']
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/usersearch/434f52455645525f4f524445525f5645524946595f5657/564552494649434154494f4e", headers, None)
+    makeRequest(conn, "GET", "/queryservice/usersearch/434f52455645525f4f524445525f5645524946595f5657/564552494649434154494f4e", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/searchconfig/434f52455645525f4f524445525f5645524946595f5657", headers, None)
+    makeRequest(conn, "GET", "/queryservice/searchconfig/434f52455645525f4f524445525f5645524946595f5657", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/cartonizecodedd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/cartonizecodedd", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/tracebydoctypedockey/open/4f52444552/" + addThrees(orderKey), headers, None)
+    makeRequest(conn, "GET", "/queryservice/tracebydoctypedockey/open/4f52444552/" + addThrees(orderKey), getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/listboxdd/4f52444552535441545553", headers, None)
+    makeRequest(conn, "GET", "/queryservice/listboxdd/4f52444552535441545553", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/listboxdd/4f52444552535441545553", headers, None)
+    makeRequest(conn, "GET", "/queryservice/listboxdd/4f52444552535441545553", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/tracebydoctypedockey/open/43415345/" + addThrees(caseID), headers, None)
+    makeRequest(conn, "GET", "/queryservice/tracebydoctypedockey/open/43415345/" + addThrees(caseID), getHeaders(headers, WMxHeaderTable), None)
     
     headers = [20, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/verification/gervergrpdd/43415345/" + addThrees(sscc), headers, None)
+    makeRequest(conn, "GET", "/verification/gervergrpdd/43415345/" + addThrees(sscc), getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    response = makeRequest(conn, "GET", "/queryservice/order/" + addThrees(sscc) + "/case", headers, None)
+    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/order/" + addThrees(sscc) + "/case", getHeaders(headers, WMxHeaderTable), None)
     
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = response.decode('utf-8')
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/verification/instructions/case/43415345", headers, params)
+    makeRequest(conn, "PUT", "/verification/instructions/case/43415345", getHeaders(headers, WMxHeaderTable), params)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/order/" + addThrees(orderKey), headers, None)
+    makeRequest(conn, "GET", "/queryservice/order/" + addThrees(orderKey), getHeaders(headers, WMxHeaderTable), None)
     
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    response = makeRequest(conn, "GET", "/queryservice/orderverifyviewbydoctype/43415345/" + addThrees(caseID), headers, None)
+    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/orderverifyviewbydoctype/43415345/" + addThrees(caseID), getHeaders(headers, WMxHeaderTable), None)
     response = json.loads(response)
     
     for skuRecord in response:
         count = skuRecord['PICKQTY'] - skuRecord['VERIFYQTY']
         while count > 0:
             headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-            makeRequest(conn, "GET", "/queryservice/codelist/56455251545945444954", headers, None)
+            makeRequest(conn, "GET", "/queryservice/codelist/56455251545945444954", getHeaders(headers, WMxHeaderTable), None)
             
             headers = [27, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
             params = '"' + skuRecord['SKU'] + '"'
             WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-            makeRequest(conn, "POST", "/format/parselist/534b554c4142454c/3030/3138", headers, params)
+            makeRequest(conn, "POST", "/format/parselist/534b554c4142454c/3030/3138", getHeaders(headers, WMxHeaderTable), params)
             
             headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-            makeRequest(conn, "GET", "/queryservice/tracebydoctypedockey/open/534b55/" + addThrees(sku), headers, None)
+            makeRequest(conn, "GET", "/queryservice/tracebydoctypedockey/open/534b55/" + addThrees(sku), getHeaders(headers, WMxHeaderTable), None)
             
             headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-            makeRequest(conn, "GET", "/queryservice/tracebydoctypedockey/open/564552534b55/" + addThrees(sku), headers, None)
+            makeRequest(conn, "GET", "/queryservice/tracebydoctypedockey/open/564552534b55/" + addThrees(sku), getHeaders(headers, WMxHeaderTable), None)
             
             headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
             params = '{"ORDERVERIFYID":27110881,"SITEID":"ONT005","CASEID":"0011847104","ORDERKEY":"0003772380","ORDERLINENO":9,"SKU":"000990977002214005","DESCRIPTION":"Sweater White, L","SERIAL_FLAG":"N","CLIENTID":"4044","LOT":"LOT","PICKQTY":3,"VERIFYQTY":0,"UOM":"EA","UOM_LEVEL":1,"UOMQTY":3,"UOMCONVQTY":1,"NONINVENTORY_FLAG":"N","DATACAPTURE_FLAG":"N","DATACAPTURECODE":null,"VALIDATE_FLAG":"N","VALIDATECODE":null,"VERIFYWHO":null,"DEFECT_FLAG":"N","DEFECTCODE":null,"DEFECTNOTES":null,"PICKER":null,"RESOLVECODE":null,"RESOLVEWHO":null,"HAZMAT_FLAG":"N","HAZMATCODE":null,"PACK_FLAG":"N","PACKTS":null,"PACKWHO":null,"PACKREFKEY":null,"DROPID":null,"ORDERPICKID":33851009,"STATUS":141,"STATUSTS":"2022-03-12T18:16:07.180676-05:00","VERGROUPCD":null,"VERGROUPKEY":null,"ADDTS":"2022-03-12T18:16:07.180682-05:00","ADDWHO":"yharosvargas","EDITTS":"2022-03-12T18:16:07.180685-05:00","EDITWHO":"yharosvargas","SKUSCAN_FLAG":"Y","LOTATR1":null,"LOTATR2":null,"LOTATR3":null,"LOTATR4":null,"LOTATR5":null,"LOTATR6":null,"LOTATR7":null,"LOTATR8":null,"CARTONTYPE":"A16"}'
             WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-            makeRequest(conn, "PUT", "/verification/instructions/verifyline", headers, params)
+            makeRequest(conn, "PUT", "/verification/instructions/verifyline", getHeaders(headers, WMxHeaderTable), params)
             
             headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
             params = '""'
             WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-            makeRequest(conn, "PUT", "/verification/verifydetail/3237313130383831/31", headers, params)
+            makeRequest(conn, "PUT", "/verification/verifydetail/3237313130383831/31", getHeaders(headers, WMxHeaderTable), params)
             
             headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-            makeRequest(conn, "GET", "/queryservice/sku/" + addThrees(sku), headers, None)
+            makeRequest(conn, "GET", "/queryservice/sku/" + addThrees(sku), getHeaders(headers, WMxHeaderTable), None)
             
             headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-            makeRequest(conn, "GET", "/queryservice/orderverifyviewbydoctype/43415345/" + addThrees(caseID), headers, None)
+            makeRequest(conn, "GET", "/queryservice/orderverifyviewbydoctype/43415345/" + addThrees(caseID), getHeaders(headers, WMxHeaderTable), None)
 
 def handle_150(conn, sscc):
     print('Handling status 150 tote')
@@ -556,156 +597,133 @@ def masterTotes(conn, containerKey):
     print('Mastering stack...')
     print('1: Looking up master container')
     headers = [20, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/container/lookupmastercontainer/" + addThrees(containerKey), headers, None)
+    makeRequest(conn, "GET", "/container/lookupmastercontainer/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
     
     print('2: Closing master container')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
     params = '{}'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/closemastercontainer/" + addThrees(containerKey), headers, params)
+    makeRequest(conn, "PUT", "/container/closemastercontainer/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), params)
     return containerKey
 
-def loadTotes(conn, loadID, containerKeys):
+def initLoading(conn, loadID):
     print('Loading all totes to Load ID:' + loadID)
     
     #First we enter the loadID
     print('1')
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/loadSearch/" + addThrees(loadID), headers, None)
+    makeRequest(conn, "GET", "/queryservice/loadSearch/" + addThrees(loadID), getHeaders(headers, WMxHeaderTable), None)
 
     print('2')
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    response = makeRequest(conn, "GET", "/queryservice/load/" + addThrees(loadID), headers, None)
+    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/load/" + addThrees(loadID), getHeaders(headers, WMxHeaderTable), None)
     
     print('3')
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/uiconfig/4d4f42494c454c4f4144/4d4f42494c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/uiconfig/4d4f42494c454c4f4144/4d4f42494c45", getHeaders(headers, WMxHeaderTable), None)
     
     print('4')
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/trailertypedd", headers, None)
+    makeRequest(conn, "GET", "/queryservice/trailertypedd", getHeaders(headers, WMxHeaderTable), None)
     
     print('5')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/uiconfig/4d4f42494c454c4f4144/4d4f42494c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/uiconfig/4d4f42494c454c4f4144/4d4f42494c45", getHeaders(headers, WMxHeaderTable), None)
     
     print('6')
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/uiconfig/4d4f42494c454c4f4144/4d4f42494c45", headers, None)
+    makeRequest(conn, "GET", "/queryservice/uiconfig/4d4f42494c454c4f4144/4d4f42494c45", getHeaders(headers, WMxHeaderTable), None)
     #Then we process the load ID
     
     print('7')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
     params = response.decode('utf-8')
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/isloaddirty", headers, params)
+    makeRequest(conn, "PUT", "/container/isloaddirty", getHeaders(headers, WMxHeaderTable), params)
     
     print('8')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
     params = response.decode('utf-8')
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/saveload", headers, params)
+    makeRequest(conn, "PUT", "/container/saveload", getHeaders(headers, WMxHeaderTable), params)
     
     print('9')
     headers = [20, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/container/activeloads", headers, None)
+    makeRequest(conn, "GET", "/container/activeloads", getHeaders(headers, WMxHeaderTable), None)
     
     print('10')
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/4c4f4144444f4f52434f4e4649524d", headers, None)
+    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/4c4f4144444f4f52434f4e4649524d", getHeaders(headers, WMxHeaderTable), None)
     
     print('11')
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/load/" + addThrees(loadID), headers, None)
+    makeRequest(conn, "GET", "/queryservice/load/" + addThrees(loadID), getHeaders(headers, WMxHeaderTable), None)
     
     print('12')
     headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/loadDtlList/" + addThrees(loadID), headers, None)
+    makeRequest(conn, "GET", "/queryservice/loadDtlList/" + addThrees(loadID), getHeaders(headers, WMxHeaderTable), None)
+
+def loadTotes(conn, loadID, containerKey):
+    #This is us loading a containerKey
+    print('13: Loading container ' + containerKey)
+    headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
+    params = '{}'
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+    makeRequest(conn, "PUT", "/container/loadcontainer/" + addThrees(loadID) + "/" + addThrees(containerKey) + "/5339/302e646f76716f386a6c366774", getHeaders(headers, WMxHeaderTable), params)
     
-    for containerKey in containerKeys:
-        #This is us loading a containerKey
-        print('13: Loading container ' + containerKey)
-        headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-        params = '{}'
-        WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-        makeRequest(conn, "PUT", "/container/loadcontainer/" + addThrees(loadID) + "/" + addThrees(containerKey) + "/5339/302e646f76716f386a6c366774", headers, params)
-        
-        print('14')
-        headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/load/" + addThrees(loadID), headers, None)
-        
-        print('15')
-        headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-        makeRequest(conn, "GET", "/queryservice/loadDtlList/" + addThrees(loadID), headers, None)
+    print('14')
+    headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
+    makeRequest(conn, "GET", "/queryservice/load/" + addThrees(loadID), getHeaders(headers, WMxHeaderTable), None)
+    
+    print('15')
+    headers = [10, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
+    makeRequest(conn, "GET", "/queryservice/loadDtlList/" + addThrees(loadID), getHeaders(headers, WMxHeaderTable), None)
 
-def handleAllTotes(conn, wb):
-    sheet_ranges = wb['Sheet1']
+def handleTote(conn: http.client.HTTPConnection, record: dict) -> str:
+    status = record['record']['COMMENTS'][:3]
 
-    # Loop through every tote in sheet and process it based on its status
-    for row in sheet_ranges:
-        blacklisted = False
-        for store in storeBlacklist:
-            if row[16].value.find('US0' + store) != -1:
-                blacklisted = True
-                break
-        #
-        if blacklisted:
-            continue
-        #
-        status = row[18].value[:3] # first three letters of cell value in 18th column
-        if status == '118':
-            # handle_118()
-            continue
-        elif status == '125':
-            handle_125()
-        elif status == '130':
-            handle_130()
-        elif status == '135':
-            try:
-                readyTotes.append(handle_135(conn, row[9].value))
-            except http.client.HTTPException:
-                print('Connection is broken. Restarting connection to WMx.')
-                conn = initWMx()
-            except:
-                print('Error Occcured')
-        elif status == '140':
-            try:
-                readyTotes.append(handle_140(conn, row[9].value))
-            except http.client.HTTPException:
-                print('Connection is broken. Restarting connection to WMx.')
-                conn = initWMx()
-            except:
-                print('Error Occcured')
-        elif status == '141':
-            try:
-                handle_141(conn, row[9].value)
-                readyTotes.append(handle_135(conn, row[9].value))
-            except http.client.HTTPException:
-                print('Connection is broken. Restarting connection to WMx.')
-                conn = initWMx()
-            except:
-                print('Error Occcured')
-        elif status == '150':
-            try:
-                readyTotes.append(handle_150(conn, row[9].value))
-            except http.client.HTTPException:
-                print('Connection is broken. Restarting connection to WMx.')
-                conn = initWMx()
-            except:
-                print('Error Occcured')
-        elif status == '160':
-            handle_160()
-            readyTotes.append(row[10].value)
-        elif status == '161':
-            handle_161(conn, row[10].value, row)
-        elif status == '165':
-            handle_165(row)
-        else:
-            if status != 'COM':
-                print('Tote status ' + status + ' is not handled by this script.')
-
-def handleTote(conn, record):
-    pass
+    if status == '118':
+        return handle_118()
+    elif status == '125':
+        return handle_125()
+    elif status == '130':
+        return handle_130()
+    elif status == '135':
+        try:
+            return handle_135(conn, record['record']['CS_ID'])
+        except Exception as e:
+            print('Error Occcured: 135')
+            logging.exception(e)
+    elif status == '140':
+        try:
+            return handle_140(conn, record['record']['CS_ID'])
+        except Exception as e:
+            print('Error Occcured: 140')
+            logging.exception(e)
+    elif status == '141':
+        try:
+            return handle_141(conn, record['record']['CS_ID'])
+        except Exception as e:
+            print('Error Occcured: 141')
+            logging.exception(e)
+    elif status == '150':
+        try:
+            return handle_150(conn, record['record']['CS_ID'])
+        except Exception as e:
+            print('Error Occcured: 150')
+            logging.exception(e)
+    elif status == '161':
+        try:
+            return None
+            # masterTotes()
+            # return handle_150(conn, record['record']['CS_ID'])
+        except Exception as e:
+            print('Error Occcured: 161')
+            logging.exception(e)
+    else:
+        if status != 'COM':
+            print('Tote status ' + status + ' is not handled by this script.')
+    return None
 
 def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, processedRecords: dict) -> None:
     # Apparently, threaded functions don't display exceptions normally, so
@@ -717,20 +735,25 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, proces
             with logLock:
                 record = processedRecords['unprocessedTotes'][index]
                 if record['threadid'] == 0:
-                    # print(threadID)
-                    # print(record['record']['SSCC'])
                     record['threadid'] = threadID
 
             if record['threadid'] == threadID:
-                handleTote()
+                containerKey = handleTote(conn, record)
+                if containerKey != None:
+                    with logLock:
+                        record['threadid'] = 0
+                        record['record']['CONT_KEY'] = containerKey
+                        processedRecords['unloadedTotes'].append(record)
 
+        initLoading(conn)
         for index in range(len(processedRecords['unloadedTotes'])):
             with logLock:
                 record = processedRecords['unloadedTotes'][index]
                 if record['threadid'] == 0:
-                    # print(threadID)
-                    # print(record['record']['SSCC'])
                     record['threadid'] = threadID
+
+            if record['threadid'] == threadID:
+                loadTotes(conn, args.loadid, record['record']['CONT_KEY'])
     except Exception as e:
         logging.exception(e)
     return
@@ -786,7 +809,10 @@ def processATR(atr: list, blacklist: list) -> dict:
     for record in atr:
         status = record['COMMENTS'][:3]
         if record['PACKGROUPKEY'][3:6] in blacklist:
-            continue 
+            continue
+        if record['CASE_CREATE_DATE_PST'][:10] > datetime.now().strftime('%m/%d/%y'):
+            logging.debug('Skipping record: %s %s', record)
+            continue
         if status in unprocessedStatuses:
             unprocessedTotes.append({'record': record, 'threadid': 0})
         elif status == '160':
@@ -821,7 +847,6 @@ def loadExcel(workBook: openpyxl.Workbook) -> list:
 
 def dumpExcel(atr: list) -> None:
     from openpyxl.styles import PatternFill, Border, Side, Font
-    from datetime import datetime
 
     wb = openpyxl.Workbook()
     newSheets = {}
