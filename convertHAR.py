@@ -2,7 +2,7 @@ import json
 import os
 
 # os.chdir('C:/Users/asorialimon/Documents/WMX')
-f = open('Resources/wave.har', 'r')
+f = open('Resources/bax.har', 'r')
 # f = open('x.har', 'r')
 f2 = open('convert.txt', 'w')
 x = json.load(f)

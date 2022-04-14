@@ -78,16 +78,10 @@ BAxHeaderTable = {
 	12	: ('Accept-Encoding', 'gzip, deflate, br'),
 	13	: ('Accept-Language', 'en-US,en;q=0.9'),
 	14	: ('Origin', 'https://bax08s.am.gxo.com'),
-	15	: ('Accept', 'text/css,*/*;q=0.1'),
 	16	: ('Sec-Fetch-Site', 'same-origin'),
-	29	: ('Sec-Fetch-Mode', 'no-cors'),
-	30	: ('Sec-Fetch-Dest', 'style'),
 	31	: ('Referer', 'https://bax08s.am.gxo.com/handm/login/'),
 	32	: ('Cookie', 'session=eyJjc3JmX3Rva2VuIjoiN2U3NjIzNmJkYjU5YmNkMjc2YTExODQ4ZTc4YzhmMjg3N2RiYzBmYyJ9.Ykvx4w.ZZkcuqhmMP3m7QWqGoD3b-DR3u4; _client=handm; NSC_WTsw_l8t-johsftt.td.yqp.dpn443=ffffffffaf1b3d1045525d5f4f58455e445a4a42378b'),
 	33	: ('Accept', '*/*'),
-	34	: ('Sec-Fetch-Dest', 'script'),
-	35	: ('Accept', 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8'),
-	36	: ('Sec-Fetch-Dest', 'image'),
 	37	: ('Content-Length', '0'),
 	38	: ('Cache-Control', 'max-age=0'),
 	39	: ('Content-Type', 'application/x-www-form-urlencoded'),
@@ -97,10 +91,9 @@ BAxHeaderTable = {
 	43	: ('X-CSRFToken', 'IjdlNzYyMzZiZGI1OWJjZDI3NmExMTg0OGU3OGM4ZjI4NzdkYmMwZmMi.Ykvy2g.yIkUUMhCbgy9ltl921oYWEFBLyM'),
 	44	: ('Sec-Fetch-Mode', 'same-origin'),
 	45	: ('Sec-Fetch-Dest', 'empty'),
-	46	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundary7XXhQdTyIALZLRcX'),
 	48	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundaryeoW7XBYpazf0Y0uG'),
 	49	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundary9nA69TfFQg8qZOib'),
-	50	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundaryRLLy0TetMfhPMq50')
+	50	: ('Content-Type', 'multipart/form-data; boundary=----WebKitFormBoundaryCpth1F5kvN4Pl8UH')
 }
 
 def addThrees(value):
@@ -118,6 +111,7 @@ def getHeaders(indexes: list, headerTable: dict) -> dict:
 def makeRequest(conn, method, path, headers: dict, payload: str):
 	conn.request(method, path, payload, headers)
 	res = conn.getresponse()
+	print(path)
 	print(str(res.status) + ', ' + str(res.reason))
 	data = res.read()
 	try:
@@ -137,30 +131,39 @@ def requestBAx(username: str, password: str) -> list:
     cookieHeader = functools.reduce(lambda a, b: a + b[:b.find(';')] + '; ', cookieHeaders, '')[:-2]
 
     headers = [0, 1, 37, 38, 2, 3, 4, 5, 14, 39, 6, 7, 16, 9, 10, 11, 31, 12, 13, 32]
+    logging.info('Logging into to BAx...')
     params = 'csrf_token=' + csrfToken + '&version=1.2.4&username=' + username + '&password=' + password + '&execution=&_eventId=submit&geolocation=&submit=Log+In'
     BAxHeaderTable[37] = ('Content-Length', str(len(params)))
     BAxHeaderTable[32] = ('Cookie', cookieHeader)
+    response, responseHeaders = makeRequest(conn, "POST", "/handm/login/", getHeaders(headers, BAxHeaderTable), params)
     
-    logging.info('Logging into to BAx...')
-    makeRequest(conn, "POST", "/handm/login/", getHeaders(headers, BAxHeaderTable), params)
-
-    logging.info('Loading main dashboard...')
     headers = [0, 1, 38, 5, 6, 7, 16, 9, 10, 11, 2, 3, 4, 31, 12, 13, 40]
-    makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", getHeaders(headers, BAxHeaderTable), None)
+    for i in range(len(cookieHeaders)):
+        if cookieHeaders[i].find('session') != -1:
+            cookieHeaders[i]= 'session=' + re.findall(r'session=(.*);', str(responseHeaders))[0]
+    cookieHeader = functools.reduce(lambda a, b: a + b[:b.find(';')] + '; ', cookieHeaders, '')[:-2]
+    BAxHeaderTable[32] = ('Cookie', cookieHeader)
+    logging.info('Loading main dashboard...')
+    response, responseHeaders = makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", getHeaders(headers, BAxHeaderTable), None)
+    print(response)
+    csrfToken = re.findall(r'csrf.*value="(.*)">', response)[0]
+    print(csrfToken)
+    BAxHeaderTable[43] = ('X-CSRFToken', csrfToken)
     
+    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 32]
     logging.info('Loading random API...')
-    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
     makeRequest(conn, "GET", "/csstemplateasyncmodelview/api/read", getHeaders(headers, BAxHeaderTable), None)
 
     logging.info('Loading another random API...')
-    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
+    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 32]
     makeRequest(conn, "GET", "/handm/csstemplateasyncmodelview/api/read", getHeaders(headers, BAxHeaderTable), None)
 
+    headers = [0, 1, 37, 2, 43, 3, 48, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
     logging.info('Loading the Aging Totes Report...')
-    headers = [0, 1, 37, 2, 43, 3, 49, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
-    params = '{"datasource":"1004028__table","viz_type":"table","slice_id":1002187,"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":10000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE_PST","CASE_CREATE_DATE_PST","MBOLKEY","LOAD_ID","TR_TYPE","SITEID","EXTERNKEY","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","LANE","ROUTE","PACKGROUPKEY","TOTALQTY","COMMENTS"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
-    BAxHeaderTable[61] = ('Content-Length', str(len(params)))
-    response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", getHeaders(headers, BAxHeaderTable), params)
+    params = '{"datasource":"1003238__table","viz_type":"table","slice_id":1001929,"url_params":{},"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":1000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE","CASE_CREATE_DATE","MBOLKEY","LOAD_ID","TR_TYPE","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","PACKGROUPKEY","LANE","TOTALQTY","COMMENTS","LAST_USER_EDITING_LOAD","LAST_USER_EDITING_CASE"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d %H:%M:%S","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
+    BAxHeaderTable[37] = ('Content-Length', str(len(params)))
+    response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1001929%7D", getHeaders(headers, BAxHeaderTable), params)
+    print(response, responseHeaders)
     atr = json.loads(response)
     return atr['data']['records']
 
@@ -637,13 +640,13 @@ def initLoading(conn, loadID):
     
     print('7')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    params = response.decode('utf-8')
+    params = response
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/isloaddirty", getHeaders(headers, WMxHeaderTable), params)
     
     print('8')
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
-    params = response.decode('utf-8')
+    params = response
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/saveload", getHeaders(headers, WMxHeaderTable), params)
     
@@ -745,7 +748,7 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, proces
                         record['record']['CONT_KEY'] = containerKey
                         processedRecords['unloadedTotes'].append(record)
 
-        initLoading(conn)
+        initLoading(conn, args.loadid)
         for index in range(len(processedRecords['unloadedTotes'])):
             with logLock:
                 record = processedRecords['unloadedTotes'][index]
