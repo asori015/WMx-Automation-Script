@@ -64,7 +64,6 @@ headers = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 response, responseHeaders = makeRequest(conn, "GET", "/handm/login/", headers, None)
 csrfToken = re.findall(r'csrf.*value="(.*)">', response)[0]
 print(csrfToken)
-# cookieHeader = 
 cookieHeaders = re.findall(r'Set-Cookie: (.*);', str(responseHeaders))
 cookieHeader = functools.reduce(lambda a, b: a + b[:b.find(';')] + '; ', cookieHeaders, '')[:-2]
 
@@ -76,7 +75,6 @@ print('loging in...')
 response, responseHeaders = makeRequest(conn, "POST", "/handm/login/", headers, params)
 print(response, responseHeaders)
 #
-print(lookupHeaders[32])
 for i in range(len(cookieHeaders)):
 	if cookieHeaders[i].find('session') != -1:
 		cookieHeaders[i]= 'session=' + re.findall(r'session=(.*);', str(responseHeaders))[0]
@@ -101,19 +99,23 @@ response, responseHeaders = makeRequest(conn, "GET", "/handm/csstemplateasyncmod
 
 
 print('load aging totes report')
-headers = [0, 1, 37, 2, 43, 3, 48, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
-params = '{"datasource":"1003238__table","viz_type":"table","slice_id":1001929,"url_params":{},"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":1000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE","CASE_CREATE_DATE","MBOLKEY","LOAD_ID","TR_TYPE","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","PACKGROUPKEY","LANE","TOTALQTY","COMMENTS","LAST_USER_EDITING_LOAD","LAST_USER_EDITING_CASE"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d %H:%M:%S","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
-lookupHeaders[37] = ('Content-Length', str(len(params)))
-response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1001929%7D", headers, params)
+# headers = [0, 1, 37, 2, 43, 3, 48, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
+# params = '{"datasource":"1003238__table","viz_type":"table","slice_id":1001929,"url_params":{},"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":1000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE","CASE_CREATE_DATE","MBOLKEY","LOAD_ID","TR_TYPE","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","PACKGROUPKEY","LANE","TOTALQTY","COMMENTS","LAST_USER_EDITING_LOAD","LAST_USER_EDITING_CASE"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d %H:%M:%S","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
+# lookupHeaders[37] = ('Content-Length', str(len(params)))
+# response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1001929%7D", headers, params)
 # print(response, responseHeaders)
 # atr = json.loads(response)
 # print(atr)
 
+
+
+# ////////////
 # headers = [0, 1, 37, 2, 43, 3, 49, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
 # params = '{"datasource":"1004028__table","viz_type":"table","slice_id":1002187,"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":1000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE_PST","CASE_CREATE_DATE_PST","MBOLKEY","LOAD_ID","TR_TYPE","SITEID","EXTERNKEY","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","LANE","ROUTE","PACKGROUPKEY","TOTALQTY","COMMENTS"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d %H:%M:%S","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
 # lookupHeaders[37] = ('Content-Length', str(len(params)))
 # response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", headers, params)
 # atr = json.loads(response)
+
 # print(atr)
 
 # atr = json.loads(response)

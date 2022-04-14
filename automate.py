@@ -145,26 +145,26 @@ def requestBAx(username: str, password: str) -> list:
     BAxHeaderTable[32] = ('Cookie', cookieHeader)
     logging.info('Loading main dashboard...')
     response, responseHeaders = makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", getHeaders(headers, BAxHeaderTable), None)
-    print(response)
+    # print(response)
     csrfToken = re.findall(r'csrf.*value="(.*)">', response)[0]
-    print(csrfToken)
+    # print(csrfToken)
     BAxHeaderTable[43] = ('X-CSRFToken', csrfToken)
     
-    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 32]
+    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
     logging.info('Loading random API...')
     makeRequest(conn, "GET", "/csstemplateasyncmodelview/api/read", getHeaders(headers, BAxHeaderTable), None)
 
     logging.info('Loading another random API...')
-    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 32]
+    headers = [0, 1, 2, 43, 3, 6, 4, 33, 16, 44, 45, 41, 12, 13, 42]
     makeRequest(conn, "GET", "/handm/csstemplateasyncmodelview/api/read", getHeaders(headers, BAxHeaderTable), None)
 
-    headers = [0, 1, 37, 2, 43, 3, 48, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
+    headers = [0, 1, 37, 2, 43, 3, 49, 6, 4, 33, 14, 16, 44, 45, 41, 12, 13, 42]
     logging.info('Loading the Aging Totes Report...')
-    params = '{"datasource":"1003238__table","viz_type":"table","slice_id":1001929,"url_params":{},"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":1000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE","CASE_CREATE_DATE","MBOLKEY","LOAD_ID","TR_TYPE","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","PACKGROUPKEY","LANE","TOTALQTY","COMMENTS","LAST_USER_EDITING_LOAD","LAST_USER_EDITING_CASE"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d %H:%M:%S","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
+    params = '{"datasource":"1004028__table","viz_type":"table","slice_id":1002187,"granularity_sqla":null,"time_grain_sqla":"P1D","time_range":"No filter","groupby":[],"metrics":[],"percent_metrics":[],"timeseries_limit_metric":null,"row_limit":1000,"include_time":false,"order_desc":true,"all_columns":["ORDER_CREATE_DATE_PST","CASE_CREATE_DATE_PST","MBOLKEY","LOAD_ID","TR_TYPE","SITEID","EXTERNKEY","ORDERKEY","CS_ID","SSCC","CONT_KEY","MASTER_CONTAINERKEY","CARRIER","PICK_METHOD","LANE","ROUTE","PACKGROUPKEY","TOTALQTY","COMMENTS"],"order_by_cols":[],"adhoc_filters":[],"table_timestamp_format":"%Y-%m-%d %H:%M:%S","page_length":0,"include_search":false,"table_filter":false,"align_pn":false,"color_pn":true,"label_colors":{},"extra_filters":[]}'
     BAxHeaderTable[37] = ('Content-Length', str(len(params)))
-    response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1001929%7D", getHeaders(headers, BAxHeaderTable), params)
-    print(response, responseHeaders)
+    response, responseHeaders = makeRequest(conn, "POST", "/handm/superset/explore_json/?form_data=%7B%22slice_id%22%3A1002187%7D", getHeaders(headers, BAxHeaderTable), params)
     atr = json.loads(response)
+    # print(response, responseHeaders)
     return atr['data']['records']
 
 def initWMx() -> http.client.HTTPConnection:
