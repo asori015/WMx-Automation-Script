@@ -9,6 +9,9 @@ import gzip
 import re
 from datetime import datetime
 import logging
+import os
+
+os.chdir(os.getcwd() + '\WMx-active')
 
 all_columns = [
     "ORDER_CREATE_DATE_PST",
@@ -291,7 +294,7 @@ def getNewLoadID(conn):
     # Updating our chosen load ID with correct values
     response = json.loads(response)
     response['SEALNUMBER'] = 'SN' + dummyLoad
-    response['TRAILERNUMBER'] = 'DUMMY' + date.today().strftime('%m%d%y')
+    response['TRAILERNUMBER'] = 'DUMMY' + datetime.now().strftime('%m%d%y')#date.today().strftime('%m%d%y')
     response['DOOR'] = 'S9'
     response['LOADTYPE'] = 'VIA_SP'
     response = json.dumps(response)
@@ -413,61 +416,83 @@ def handle_135(conn, sscc):
     caseID = ''
     containerKey = ''
 
-    print('1')
+    print('1: Getting case info')
+    # Gives back basic info about case based on given SSCC
     headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     response, responseHeaders = makeRequest(conn, "GET", "/queryservice/order/" +  addThrees(sscc) + "/case", getHeaders(headers, WMxHeaderTable), None)
     caseID = re.findall(r'"CASEID":"(\d*)"', response)[0]
     
-    print('2')
+    print('2: Getting Container Key')
+    # Returns Container Key based on given Case_ID
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = ''
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     response, responseHeaders = makeRequest(conn, "PUT", "/container/opencontainersingle/" + addThrees(caseID) + "/", getHeaders(headers, WMxHeaderTable), params)
     containerKey = response[1:-1]
+    if len(containerKey) != 10:
+        return ''
     
-    print('3')
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+    # print('3')
+    # # Gives more specific container data given a Container Key
+    # headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
     
-    print('5')
+    print('5: Binding Container Key to Case ID')
+    # Binds a Case ID to the Container Key given earlier. Important step...
     headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
     params = '{}'
     WMxHeaderTable[2] = ('Content-Length', str(len(params)))
     makeRequest(conn, "PUT", "/container/addcasesingle/" + addThrees(containerKey) + "/" + addThrees(caseID) + "/", getHeaders(headers, WMxHeaderTable), params)
     
-    print('6')
-    #The response from this query gets fed into the 'iscontainerdirty' request
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
-    print('7')
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/carrierdd", getHeaders(headers, WMxHeaderTable), None)
-    print('8')
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
-    print('9')
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e545041434b4147455459504557495448434152544f4e54595045", getHeaders(headers, WMxHeaderTable), None)
-    print('10')
-    headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    params = response
-    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/iscontainerdirty", getHeaders(headers, WMxHeaderTable), params)
-    print('11: Requesting to close container')
-    headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    params = '{}'
-    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
-    makeRequest(conn, "PUT", "/container/closepackedcontainersingle/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), params)
-    print('12')
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
-    print('13')
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
-    print('14')
-    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
-    makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e545041434b4147455459504557495448434152544f4e54595045", getHeaders(headers, WMxHeaderTable), None)
-    return containerKey
+    # print('6: Getting container info')
+    # #The response from this query gets fed into the 'iscontainerdirty' request. Only seems to work *after* Case id and container key are bound.
+    # headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # response, responseHeaders = makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+    
+    # # print('7')
+    # # # Don't know what the hell this is, did not see it in latest Network check
+    # # headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # # makeRequest(conn, "GET", "/queryservice/carrierdd", getHeaders(headers, WMxHeaderTable), None)
+    
+    # # print('8')
+    # # # Slightly different request similar to queryservice/containership/ (containerKey)
+    # # headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # # makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+    
+    # # print('9')
+    # # # Returns unneeded configuration data
+    # # headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # # makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e545041434b4147455459504557495448434152544f4e54595045", getHeaders(headers, WMxHeaderTable), None)
+    
+    # print('10: Checking if container is vaild')
+    # # First step in closing the container
+    # headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # params = response
+    # WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+    # makeRequest(conn, "PUT", "/container/iscontainerdirty", getHeaders(headers, WMxHeaderTable), params)
+    
+    # print('11: Requesting to close container')
+    # # Main request to close the container
+    # headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # params = '{}'
+    # WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+    # makeRequest(conn, "PUT", "/container/closepackedcontainersingle/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), params)
+    
+    # # print('12')
+    # # # Same request as above
+    # # headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # # makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+    
+    # # print('13')
+    # # # Same request as above
+    # # headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # # makeRequest(conn, "GET", "/queryservice/containershipdetailsbycontainerkey/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+    
+    # # print('14')
+    # # # Same request as above
+    # # headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # # makeRequest(conn, "GET", "/queryservice/configbyconfigid/all/434e545041434b4147455459504557495448434152544f4e54595045", getHeaders(headers, WMxHeaderTable), None)
+    return closeContainer(conn, containerKey)
 
 def handle_140(conn, sscc):
     print('Handling status 140 tote')
@@ -581,9 +606,27 @@ def handle_141(conn, sscc):
             headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
             makeRequest(conn, "GET", "/queryservice/orderverifyviewbydoctype/43415345/" + addThrees(caseID), getHeaders(headers, WMxHeaderTable), None)
 
-def handle_150(conn, sscc):
-    print('Handling status 150 tote')
-    return handle_135(conn, sscc) # Status 150 totes function almost the same as status 135 totes
+def closeContainer(conn, containerKey):
+    print('Closing Container...')
+    print('1: Getting container info')
+    #The response from this query gets fed into the 'iscontainerdirty' request. Only seems to work *after* Case id and container key are bound.
+    headers = [10, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    response, responseHeaders = makeRequest(conn, "GET", "/queryservice/containership/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+
+    print('2: Checking if container is vaild')
+    # First step in closing the container
+    headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    params = response
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+    makeRequest(conn, "PUT", "/container/iscontainerdirty", getHeaders(headers, WMxHeaderTable), params)
+    
+    print('3: Requesting to close container')
+    # Main request to close the container
+    headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    params = '{}'
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+    makeRequest(conn, "PUT", "/container/closepackedcontainersingle/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), params)
+    return containerKey
 
 def handle_160():
     print('Handling status 160 tote') # We don't really need to do anything for this status.
@@ -728,11 +771,14 @@ def handleTote(conn: http.client.HTTPConnection, record: dict) -> str:
             print('Tote status ' + status + ' is not handled by this script.')
     return None
 
-def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, processedRecords: dict) -> None:
+def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, processedRecords: dict, dummyLoadID: str) -> None:
     # Apparently, threaded functions don't display exceptions normally, so
     # I'm encapsulating the entire function in a try-catch block to fix that.
     try:
+        print('here')
+        logging.info('Initializing WMx...')
         conn = initWMx()
+        logging.info('Processing Totes...')
         for index in range(len(processedRecords['unprocessedTotes'])):
             record = None
             with logLock:
@@ -748,7 +794,9 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, proces
                         record['record']['CONT_KEY'] = containerKey
                         processedRecords['unloadedTotes'].append(record)
 
-        initLoading(conn, args.loadid)
+        logging.info('Initializing loading %s...', dummyLoadID)
+        initLoading(conn, dummyLoadID)
+        logging.info('Beginning to load...')
         for index in range(len(processedRecords['unloadedTotes'])):
             with logLock:
                 record = processedRecords['unloadedTotes'][index]
@@ -756,7 +804,7 @@ def run(threadID: int, logLock: threading.Lock, args: argparse.Namespace, proces
                     record['threadid'] = threadID
 
             if record['threadid'] == threadID:
-                loadTotes(conn, args.loadid, record['record']['CONT_KEY'])
+                loadTotes(conn, dummyLoadID, record['record']['CONT_KEY'])
     except Exception as e:
         logging.exception(e)
     return
@@ -774,7 +822,11 @@ def processATR(atr: list, blacklist: list) -> dict:
         status = record['COMMENTS'][:3]
         if record['PACKGROUPKEY'][3:6] in blacklist:
             continue
-        if record['CASE_CREATE_DATE_PST'][:10] > datetime.now().strftime('%m/%d/%y'):
+        if record['COMMENTS'].find('OPEN PICKS') != -1:
+            continue
+        if record['CARRIER'][2:5] == 'DNV':
+            continue
+        if record['CASE_CREATE_DATE_PST'][:10] >= datetime.now().strftime('%m/%d/%y'):
             logging.debug('Skipping record: %s %s', record)
             continue
         if status in unprocessedStatuses:
@@ -966,10 +1018,36 @@ def main() -> None:
     logging.info('Processing Aging Tote Report with %s threads', args.threads)
     if args.threads is not None and args.threads > 0:
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-            executor.map(lambda x: run(x + 1, logLock, args, processedRecords), range(args.threads))
+            executor.map(lambda x: run(x + 1, logLock, args, processedRecords, dummyLoad), range(args.threads))
 
     logging.debug(processedRecords)
     return
 
+def temp():
+    conn = initWMx()
+
+    loadid = '0000029724'
+    initLoading(conn, loadid)
+
+    print('1')
+    headers = [20, 1, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    response, responseHeaders = makeRequest(conn, "GET", "/container/unloadedcontainers/" + addThrees(loadid), getHeaders(headers, WMxHeaderTable), None)
+    response = json.loads(response)
+    
+    
+    for container in response:
+        print('5')
+        headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+        params = '{}'
+        WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+        makeRequest(conn, "PUT", "/container/removecntfromload/" + addThrees(loadid) + "/" + addThrees(container['CONTAINERKEY']) + "/", getHeaders(headers, WMxHeaderTable), params)
+
+def temp2():
+    conn = initWMx()
+    caseid = '00273129824827270819'
+    handle_135(conn, caseid)
+
 if __name__ == '__main__':
-    main()
+    # temp()
+    temp2()
+    # main()s

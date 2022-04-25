@@ -105,7 +105,8 @@ response, responseHeaders = makeRequest(conn, "POST", "/bff", headers, params)
 print(response)
 
 headers = [0, 1, 21, 2, 22, 23, 6, 24, 25, 3, 4, 26, 15, 27, 28, 18, 12, 13]
-params = '{"operationName": null, "variables": {"input": {"username": "lvigueria", "password": "welcome1", "forceLogoutOnlyThisUser": false}}, "query": "mutation ($input: LoginInput) {\\n  authenticate(input: $input) {\\n    token\\n    message\\n    success\\n    showForceLogout\\n  }\\n}\\n"}'
+# params = '{"operationName": null, "variables": {"input": {"username": "lvigueria", "password": "welcome1", "forceLogoutOnlyThisUser": false}}, "query": "mutation ($input: LoginInput) {\\n  authenticate(input: $input) {\\n    token\\n    message\\n    success\\n    showForceLogout\\n  }\\n}\\n"}'
+params = '{"operationName": null, "variables": {"input": {"username": "admin", "password": "apj0702", "forceLogoutOnlyThisUser": false}}, "query": "mutation ($input: LoginInput) {\\n  authenticate(input: $input) {\\n    token\\n    message\\n    success\\n    showForceLogout\\n  }\\n}\\n"}'
 lookupHeaders[21] = ('Content-Length', str(len(params)))
 response, responseHeaders = makeRequest(conn, "POST", "/bff", headers, params)
 response = json.loads(response)
@@ -118,14 +119,37 @@ lookupHeaders[21] = ('Content-Length', str(len(params)))
 response, responseHeaders = makeRequest(conn, "POST", "/bff", headers, params)
 print(response)
 
+caseID = '0013804416'
+# caseID = '0013804900'
+
 headers = [0, 1, 21, 2, 22, 23, 6, 24, 25, 3, 4, 26, 15, 27, 28, 18, 12, 13, 39]
-params = '{"operationName":"OutboundOrderList","variables":{"input":{"leftFilters":[],"topFilters":[{"field":"orderLevel","dateRangeFilterParams":{},"checkboxFilterParams":{"selectedValues":[]},"singleSelectFilterParams":{"label":"View Master Orders","value":"masterOrder"},"multiSelectFilterParams":{"selectedValues":[]},"inputFilterParams":{"inputValue":""},"radioFilterParams":{"selectedValue":""}}],"page":1,"limit":5,"searchKeyword":"0013339362"}},"query":"query OutboundOrderList($input: OutboundOrderListParams) {\\n  outboundOrderList(input: $input) {\\n    orders {\\n      id\\n      type\\n      externalServiceRequestId\\n      status\\n      state\\n      businessState\\n      createdOn\\n      updatedOn\\n      level\\n      parentAttributes {\\n        parentsExternalServiceRequestIds\\n        simplePriority\\n        parentsExternalServiceRequestId\\n      }\\n      srProductsCounts {\\n        exceptions\\n        actuals\\n        expectations\\n      }\\n      attributes {\\n        orderType\\n        simplePriority\\n        has_parent\\n        ppsId\\n        ppsBinId\\n        userName\\n        route\\n        shipment\\n        pickBeforeTime\\n        pickAfterTime\\n        allocationTime\\n        startTime\\n        completionTime\\n        orderOptions {\\n          bintags\\n        }\\n        noOfOrders\\n        binTagsStr\\n        executionTime\\n        carryingUnits\\n      }\\n      orderProgress {\\n        progressPercent\\n        progressLabel\\n      }\\n      canCancel\\n      canChangePAT\\n      canChangePBT\\n      canChangePriority\\n    }\\n    message {\\n      level\\n      text\\n    }\\n    total\\n  }\\n}\\n"}'
+params = '{"operationName":"OutboundOrderList","variables":{"input":{"leftFilters":[],"topFilters":[{"field":"orderLevel","dateRangeFilterParams":{},"checkboxFilterParams":{"selectedValues":[]},"singleSelectFilterParams":{"label":"View Master Orders","value":"masterOrder"},"multiSelectFilterParams":{"selectedValues":[]},"inputFilterParams":{"inputValue":""},"radioFilterParams":{"selectedValue":""}}],"page":1,"limit":5,"searchKeyword":"' + caseID + '"}},"query":"query OutboundOrderList($input: OutboundOrderListParams) {\\n  outboundOrderList(input: $input) {\\n    orders {\\n      id\\n      type\\n      externalServiceRequestId\\n      status\\n      state\\n      businessState\\n      createdOn\\n      updatedOn\\n      level\\n      parentAttributes {\\n        parentsExternalServiceRequestIds\\n        simplePriority\\n        parentsExternalServiceRequestId\\n      }\\n      srProductsCounts {\\n        exceptions\\n        actuals\\n        expectations\\n      }\\n      attributes {\\n        orderType\\n        simplePriority\\n        has_parent\\n        ppsId\\n        ppsBinId\\n        userName\\n        route\\n        shipment\\n        pickBeforeTime\\n        pickAfterTime\\n        allocationTime\\n        startTime\\n        completionTime\\n        orderOptions {\\n          bintags\\n        }\\n        noOfOrders\\n        binTagsStr\\n        executionTime\\n        carryingUnits\\n      }\\n      orderProgress {\\n        progressPercent\\n        progressLabel\\n      }\\n      canCancel\\n      canChangePAT\\n      canChangePBT\\n      canChangePriority\\n    }\\n    message {\\n      level\\n      text\\n    }\\n    total\\n  }\\n}\\n"}'
+lookupHeaders[21] = ('Content-Length', str(len(params)))
+response, responseHeaders = makeRequest(conn, "POST", "/bff", headers, params)
+print(response)
+response = json.loads(response)
+
+externalServiceRequestId = response['data']['outboundOrderList']['orders'][0]['externalServiceRequestId']
+
+headers = [0, 1, 21, 2, 22, 23, 6, 24, 25, 3, 4, 26, 15, 27, 28, 18, 12, 13, 39]
+params = '{"operationName":null,"variables":{"input":{"orders":[{"id":39591749,"externalServiceRequestId":"' + externalServiceRequestId + '","type":"PICK"}]}},"query":"mutation ($input: CancelOrdersInput!) {\\n cancelOrders(input: $input) {\\n   success\\n   message\\n   externalServiceRequestId\\n }\\n}\\n"}'
 lookupHeaders[21] = ('Content-Length', str(len(params)))
 response, responseHeaders = makeRequest(conn, "POST", "/bff", headers, params)
 print(response)
 
 headers = [0, 1, 21, 2, 22, 23, 6, 24, 25, 3, 4, 26, 15, 27, 28, 18, 12, 13, 39]
-params = '{"operationName":null,"variables":{"input":{"orders":[{"id":39591749,"externalServiceRequestId":"0004303169-0013336387","type":"PICK"}]}},"query":"mutation ($input: CancelOrdersInput!) {\\n cancelOrders(input: $input) {\\n   success\\n   message\\n   externalServiceRequestId\\n }\\n}\\n"}'
+params = '{"operationName": "NotificationList", "variables": {"input": {"page": 1, "leftFilters": [], "topFilters": [{"field": "notificationStatus", "dateRangeFilterParams": {}, "checkboxFilterParams": {"selectedValues": []}, "singleSelectFilterParams": {"label": "All", "value": "ALL"}, "multiSelectFilterParams": {"selectedValues": []}, "inputFilterParams": {"inputValue": ""}, "radioFilterParams": {"selectedValue": ""}}], "limit": 50, "searchKeyword": "' + caseID + '"}}, "query": "query NotificationList($input: NotificationListParams) {\\n  notificationList(input: $input) {\\n    notifications {\\n      createTime\\n      status\\n      id\\n      subscriber {\\n        id\\n        createTime\\n        updateTime\\n      }\\n      eventData {\\n        esrId\\n        esrType\\n        id\\n        createTime\\n        payload {\\n          notification_id\\n          notification_type\\n          status\\n        }\\n      }\\n      failedSubscriber {\\n        retryCount\\n        createTime\\n        status\\n      }\\n    }\\n    message {\\n      level\\n      text\\n    }\\n    total\\n  }\\n}\\n"}'
+lookupHeaders[21] = ('Content-Length', str(len(params)))
+response, responseHeaders = makeRequest(conn, "POST", "/bff", headers, params)
+print(response)
+response = json.loads(response)
+
+eventId = '310863156' #response['data']['notificationList']['notifications'][0]['eventData']['id']
+subscriberId = '34' #response['data']['notificationList']['notifications'][0]['subscriber']['id']
+print(eventId, subscriberId)
+
+headers = [0, 1, 21, 2, 22, 23, 6, 24, 25, 3, 4, 26, 15, 27, 28, 18, 12, 13, 39]
+params = '{"operationName": null, "variables": {"input": {"eventId": ' + eventId + ', "subscriberId": ' + subscriberId + '}}, "query": "mutation ($input: NotificationResendParams!) {\\n  notificationResend(input: $input) {\\n    response\\n  }\\n}\\n"}'
 lookupHeaders[21] = ('Content-Length', str(len(params)))
 response, responseHeaders = makeRequest(conn, "POST", "/bff", headers, params)
 print(response)
