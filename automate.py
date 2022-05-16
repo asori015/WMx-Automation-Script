@@ -9,9 +9,6 @@ import gzip
 import re
 from datetime import datetime
 import logging
-import os
-
-os.chdir(os.getcwd() + '\WMx-active')
 
 all_columns = [
     "ORDER_CREATE_DATE_PST",
@@ -148,7 +145,7 @@ def requestBAx(username: str, password: str) -> list:
     BAxHeaderTable[32] = ('Cookie', cookieHeader)
     logging.info('Loading main dashboard...')
     response, responseHeaders = makeRequest(conn, "GET", "/handm/superset/dashboard/1000000/", getHeaders(headers, BAxHeaderTable), None)
-    # print(response)
+    print(response)
     csrfToken = re.findall(r'csrf.*value="(.*)">', response)[0]
     # print(csrfToken)
     BAxHeaderTable[43] = ('X-CSRFToken', csrfToken)
@@ -824,8 +821,8 @@ def processATR(atr: list, blacklist: list) -> dict:
             continue
         if record['COMMENTS'].find('OPEN PICKS') != -1:
             continue
-        if record['CARRIER'][2:5] == 'DNV':
-            continue
+        # if record['CARRIER'][2:5] == 'LAX':
+        #     continue
         if record['CASE_CREATE_DATE_PST'][:10] >= datetime.now().strftime('%m/%d/%y'):
             logging.debug('Skipping record: %s %s', record)
             continue
@@ -1026,7 +1023,7 @@ def main() -> None:
 def temp():
     conn = initWMx()
 
-    loadid = '0000029724'
+    loadid = '0000030057'
     initLoading(conn, loadid)
 
     print('1')
@@ -1044,10 +1041,49 @@ def temp():
 
 def temp2():
     conn = initWMx()
-    caseid = '00273129824827270819'
-    handle_135(conn, caseid)
+    # caseid = '00273129824827270819'
+    # handle_135(conn, caseid)
+
+    orderKey = '0004135868'
+    
+    # print('1')
+    # headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    # params = '{}'
+    # WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+    # response, responseHeaders = makeRequest(conn, "PUT", "/orderprocess/process/" + addThrees(orderKey) + '/302e3665386165716e626b3576', getHeaders(headers, WMxHeaderTable), params)
+    # # response = json.loads(response)
+    # print(response)
+
+    # http://api.outbound.wmxp008.wmx.sc.xpo.com/orderprocess/allocate/30303034363236383139/302e32636d7374703575763077
+    # payload='{}'
+
+    # http://api.outbound.wmxp008.wmx.sc.xpo.com/orderprocess/release/30303034363236383139
+    # payload='{}'
+
+    # http://api.outbound.wmxp008.wmx.sc.xpo.com/orderprocess/process/30303034363236383139/302e3665386165716e626b3576
+    # payload='{}'
+
+
+    print('1')
+    headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    params = '{}'
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+    response, responseHeaders = makeRequest(conn, "PUT", "/orderprocess/unallocate/" + addThrees(orderKey), getHeaders(headers, WMxHeaderTable), params)
+    # response = json.loads(response)
+    print(response)
 
 if __name__ == '__main__':
     # temp()
-    temp2()
-    # main()s
+    # temp2()
+    main()
+
+####
+
+# from tkinter import *
+# from tkinter import ttk
+# root = Tk()
+# frm = ttk.Frame(root, padding=10)
+# frm.grid()
+# ttk.Label(frm, text = 'Hello World!').grid(column=0, row=0)
+# ttk.Button(frm, text='Quit', command=root.destroy).grid(column=1, row=0)
+# root.mainloop()
