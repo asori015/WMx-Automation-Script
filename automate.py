@@ -258,6 +258,7 @@ def getNewLoadID(conn):
     dummyLoads = []
     for load in activeLoads:
         if load['TRAILERTYPE'] == 'B05' and load['STATUS'] == 101:
+            print(load['LOADID'], load['PLANSHIPDATE'])
             dummyLoads.append(load['LOADID'])
     #
     if len(dummyLoads) == 0:
@@ -823,8 +824,8 @@ def processATR(atr: list, blacklist: list) -> dict:
             continue
         # if record['CARRIER'][2:5] == 'LAX':
         #     continue
-        if record['CASE_CREATE_DATE_PST'][:10] >= datetime.now().strftime('%m/%d/%y'):
-            logging.debug('Skipping record: %s %s', record)
+        if record['CASE_CREATE_DATE_PST'][:10] >= '05/30/2022': #datetime.now().strftime('%m/%d/%Y'):
+            logging.debug('Skipping record: %s', record)
             continue
         if status in unprocessedStatuses:
             unprocessedTotes.append({'record': record, 'threadid': 0})
@@ -889,7 +890,7 @@ def dumpExcel(atr: list) -> None:
 
         # Make new Excel sheet for each splitpoint that exists
         if splitpoint not in newSheets:
-            newSheets[splitpoint] = {'sheet': wb.create_sheet(splitpoint[2:5] + ' ' + datetime.now().strftime('%m.%d.%y')), 'index': 0}
+            newSheets[splitpoint] = {'sheet': wb.create_sheet(splitpoint[2:5] + ' ' + datetime.now().strftime('%m.%d.%y')), 'index': 2}
             for j, name in enumerate(all_columns):
                 cellName = chr(j + ord('A')) + '1'
                 newSheets[splitpoint]['sheet'][cellName].value = name
@@ -899,13 +900,15 @@ def dumpExcel(atr: list) -> None:
 
         # Add record to correct Excel sheet
         for j, key in enumerate(record):
-            cellName = chr(j + ord('A')) + str(newSheets[splitpoint]['index'] + 2)
+            cellName = chr(j + ord('A')) + str(newSheets[splitpoint]['index'])
             newSheets[splitpoint]['sheet'][cellName].value = record[key]
             newSheets[splitpoint]['sheet'][cellName].fill = color
         newSheets[splitpoint]['index'] += 1
     for sheet in wb:
         for i in range(len(all_columns)):
             sheet.column_dimensions[chr(ord('A') + i)].width = colunmWidths[i]
+
+    wb._sheets.sort(key=lambda ws: ws.title)
 
     wb.save(filename = 'Resources/OTR ' + datetime.now().strftime('%m.%d.%y %H.%M.%S') + '.xlsx')
     return
@@ -1023,7 +1026,7 @@ def main() -> None:
 def temp():
     conn = initWMx()
 
-    loadid = '0000030057'
+    loadid = '0000030829'
     initLoading(conn, loadid)
 
     print('1')
