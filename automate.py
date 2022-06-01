@@ -982,7 +982,7 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument(
         "-f", "--format",
         action = 'store_true',
-        help='Format BAx Aging Totes Report into Excel sheet.'
+        help='Color codes and downloads the Aging Tote Report into an Excel sheet that you can copy to the Sharepoint file.'
     )
     return parser
 
@@ -1075,10 +1075,32 @@ def temp2():
     # response = json.loads(response)
     print(response)
 
+def temp3():
+    conn = initWMx()
+    containerKey = '00273129824840760464' #5'
+    print('1: Lookup master container')
+    headers = [20, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
+    response, responseHeaders = makeRequest(conn, "GET", "/container/lookupmastercontainer/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+    print(response, responseHeaders)
+
+    print('2: Master container details')
+    headers = [20, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
+    response, responseHeaders = makeRequest(conn, "GET", "/container/mastercontainerdetails/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
+    print(response, responseHeaders)
+
+    headers = [20, 1, 2, 11, 12, 13, 14, 15, 16, 4, 17, 18, 19, 6, 7, 8, 9]
+    params = '{}'
+    WMxHeaderTable[2] = ('Content-Length', str(len(params)))
+    response, responseHeaders = makeRequest(conn, "PUT", "/container/closemastercontainer/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), params)
+    print(response, responseHeaders)
+
+    return
+
 if __name__ == '__main__':
     # temp()
     # temp2()
-    main()
+    temp3()
+    # main()
 
 ####
 
