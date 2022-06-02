@@ -17,6 +17,45 @@
         <p>
             {"MasterContainerKey":"00273129824840760465","ManualMasterContainerKey":[],"ContainersByMaster":[{"CONTAINERKEY":"0002844254","SITEID":"ONT005","CLIENTID":"4044","EXTERNKEY":"D166121968","EXTERNKEY2":"0000031013","CONTAINERTYPE":null,"CONSIGNEEKEY":"US0414","CONSIGNEEKEY2":"US04","SHIPTONAME":"US0414","SHIPTOADDRESS1":"35 Aquarium Way","SHIPTOADDRESS2":"Outlets at Pike","SHIPTOADDRESS3":null,"SHIPTOADDRESS4":null,"SHIPTOCITY":"Long Beach","SHIPTOSTATE":"CA","SHIPTOZIP":"90802-8139","SHIPTOCOUNTRY":"US","SHIPTOISOCOUNTRY":"US","SHIPTOPHONE1":null,"SHIPTOPHONE2":null,"SHIPTOFAX":null,"SHIPTOEMAIL":null,"PRINTTYPE":"Z150","VOLUME":4991.0,"LENGTH":23.0,"WIDTH":15.50,"HEIGHT":14.0,"WEIGHT":20.7424,"CALC_WEIGHT":20.7424,"MASTER_MBOLKEY":null,"MASTER_CARRIERKEY":null,"MASTER_TRACKINGNUMBER":null,"MASTER_TRANS_SERVICE":null,"MASTER_CONTAINERKEY":"00273129824840760465","STRT_MBOLKEY":"0900014056","STRT_CARRIERKEY":null,"STRT_TRACKINGNUMBER":null,"STRT_TRANS_SERVICE":null,"TOTALCASE":1,"TOTALQTY":65.0,"WCS_ROUTE_CD":null,"PACKAGETYPE":null,"PACKPOSITION":null,"PACKGROUPCD":"CONSIGNEEKEY","PACKGROUPKEY":"US041400_A","SSCC":"00273129824840760465","GS1":null,"NOTES":"SPLIT","SEALNUMBER":null,"TRAILERNUMBER":null,"TRAILEROWNER":null,"TRAILERTYPE":null,"DOOR":null,"STATUS":200,"STATUSTS":"2022-06-01T02:08:43.601397-04:00","SRCKEY":null,"SRCTS":null,"SRCWHO":"WMX","ADDTS":"2022-05-30T19:07:02.509093-04:00","ADDWHO":"pramos001","EDITTS":"2022-06-01T02:08:43.601397-04:00","EDITWHO":"asorialimon","PPS":null,"BIN":null,"LOC":null,"LOADID":null,"PACKGROUPSKU":null,"WX_CLIENT":null,"WX_CONTAINER_SHIPDTL":[],"WX_AUDIT_CONTAINER":[]}]}
         </p>
+        <p>
+            If case key is invalid:
+            
+            Invalid Container.
+            |<Xpo.Sc.Wmx.Common.WxValidationException>
+            <Message>{"CONTAINERKEY":"00273129824840760464","ERRORCODE":"CNT00044"}</Message>
+            <StackTrace>
+                <Frame>Xpo.Sc.Wmx.Outbound.CoreContainer.MasterContainerBuild.SetContainer() in E:\jenkins\workspace\WMX_Rel-22.2.05\Warehouse\Outbound\COREPALLET\MasterContainerBuild.cs:line 358</Frame>
+                <Frame>Xpo.Sc.Wmx.Outbound.CoreContainer.MasterContainerBuild.LookupMasterContainer(String siteId, String clientId, String containerKey, Boolean multiMaster) in E:\jenkins\workspace\WMX_Rel-22.2.05\Warehouse\Outbound\COREPALLET\MasterContainerBuild.cs:line 76</Frame>
+                <Frame>Xpo.Sc.Wmx.WebApi.Outbound.Controllers.CoreContainerController.LookupMasterContainer(String containerKey, Boolean multiMaster) in E:\jenkins\workspace\WMX_Rel-22.2.05\WebApi\Outbound\Controllers\CoreContainerController.cs:line 1176</Frame>
+                <Frame>lambda_method(Closure , Object , Object[] )</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.&lt;&gt;c__DisplayClass10.&lt;GetExecutor&gt;b__9(Object instance, Object[] methodParameters)</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.Execute(Object instance, Object[] arguments)</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ExecuteAsync(HttpControllerContext controllerContext, IDictionary`2 arguments, CancellationToken cancellationToken)</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ApiControllerActionInvoker.&lt;InvokeActionAsyncCore&gt;d__0.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;CallOnActionExecutedAsync&gt;d__5.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;CallOnActionExecutedAsync&gt;d__5.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;ExecuteActionFilterAsyncCore&gt;d__0.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ActionFilterResult.&lt;ExecuteAsync&gt;d__2.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ExceptionFilterResult.&lt;ExecuteAsync&gt;d__0.MoveNext()</Frame>
+            </StackTrace>
+            </Xpo.Sc.Wmx.Common.WxValidationException>
+        </p>
         <h2>
             http://api.outbound.wmxp008.wmx.sc.xpo.com/container/mastercontainerdetails/3030323733313239383234383430373630343635 Request Method: GET 
         </h2>
@@ -25,6 +64,44 @@
         </p>
         <p>
             [{"CONTAINERKEY":"0002844254","SITEID":"ONT005","CLIENTID":"4044","EXTERNKEY":"D166121968","EXTERNKEY2":"0000031013","CONTAINERTYPE":null,"CONSIGNEEKEY":"US0414","CONSIGNEEKEY2":"US04","SHIPTONAME":"US0414","SHIPTOADDRESS1":"35 Aquarium Way","SHIPTOADDRESS2":"Outlets at Pike","SHIPTOADDRESS3":null,"SHIPTOADDRESS4":null,"SHIPTOCITY":"Long Beach","SHIPTOSTATE":"CA","SHIPTOZIP":"90802-8139","SHIPTOCOUNTRY":"US","SHIPTOISOCOUNTRY":"US","SHIPTOPHONE1":null,"SHIPTOPHONE2":null,"SHIPTOFAX":null,"SHIPTOEMAIL":null,"PRINTTYPE":"Z150","VOLUME":4991.0,"LENGTH":23.0,"WIDTH":15.50,"HEIGHT":14.0,"WEIGHT":20.7424,"CALC_WEIGHT":20.7424,"MASTER_MBOLKEY":null,"MASTER_CARRIERKEY":null,"MASTER_TRACKINGNUMBER":null,"MASTER_TRANS_SERVICE":null,"MASTER_CONTAINERKEY":"00273129824840760465","STRT_MBOLKEY":"0900014056","STRT_CARRIERKEY":null,"STRT_TRACKINGNUMBER":null,"STRT_TRANS_SERVICE":null,"TOTALCASE":1,"TOTALQTY":65.0,"WCS_ROUTE_CD":null,"PACKAGETYPE":null,"PACKPOSITION":null,"PACKGROUPCD":"CONSIGNEEKEY","PACKGROUPKEY":"US041400_A","SSCC":"00273129824840760465","GS1":null,"NOTES":"SPLIT","SEALNUMBER":null,"TRAILERNUMBER":null,"TRAILEROWNER":null,"TRAILERTYPE":null,"DOOR":null,"STATUS":200,"STATUSTS":"2022-06-01T02:08:43.601397-04:00","SRCKEY":null,"SRCTS":null,"SRCWHO":"WMX","ADDTS":"2022-05-30T19:07:02.509093-04:00","ADDWHO":"pramos001","EDITTS":"2022-06-01T02:08:43.601397-04:00","EDITWHO":"asorialimon","PPS":null,"BIN":null,"LOC":null,"LOADID":null,"PACKGROUPSKU":null,"WX_CLIENT":null,"WX_CONTAINER_SHIPDTL":[],"WX_AUDIT_CONTAINER":[]}]
+        </p>
+        <p>
+            If case id is invalid:
+
+            No Container Found with the Searchvalue 00273129824840760464.
+            |<Xpo.Sc.Wmx.Common.WxNoDataFoundException>
+            <Message>{"SEARCHVALUE":"00273129824840760464","ERRORCODE":"CNT00103"}</Message>
+            <StackTrace>
+                <Frame>Xpo.Sc.Wmx.Outbound.CoreContainer.MasterContainerBuild.GetMasterContainerdetailsByserachValue(String siteId, String clientId, String searchValue) in E:\jenkins\workspace\WMX_Rel-22.2.05\Warehouse\Outbound\COREPALLET\MasterContainerBuild.cs:line 300</Frame>
+                <Frame>Xpo.Sc.Wmx.WebApi.Outbound.Controllers.CoreContainerController.GetMasterContainerDtls(String searchValue) in E:\jenkins\workspace\WMX_Rel-22.2.05\WebApi\Outbound\Controllers\CoreContainerController.cs:line 1244</Frame>
+                <Frame>lambda_method(Closure , Object , Object[] )</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.&lt;&gt;c__DisplayClass10.&lt;GetExecutor&gt;b__9(Object instance, Object[] methodParameters)</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.Execute(Object instance, Object[] arguments)</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ExecuteAsync(HttpControllerContext controllerContext, IDictionary`2 arguments, CancellationToken cancellationToken)</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ApiControllerActionInvoker.&lt;InvokeActionAsyncCore&gt;d__0.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;CallOnActionExecutedAsync&gt;d__5.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;CallOnActionExecutedAsync&gt;d__5.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;ExecuteActionFilterAsyncCore&gt;d__0.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ActionFilterResult.&lt;ExecuteAsync&gt;d__2.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ExceptionFilterResult.&lt;ExecuteAsync&gt;d__0.MoveNext()</Frame>
+            </StackTrace>
+            </Xpo.Sc.Wmx.Common.WxNoDataFoundException>
         </p>
         <h2>
             http://api.outbound.wmxp008.wmx.sc.xpo.com/container/closemastercontainer/3030323733313239383234383430373532303139 Request Method: GET 
@@ -38,6 +115,95 @@ Request Method: PUT
         </p>
         <p>
             response = ''
+        </p>
+        <p>
+            If Case ID is invalid:
+
+            Invalid Container.
+            |<Xpo.Sc.Wmx.Common.WxValidationException>
+            <Message>{"CONTAINERKEY":"00273129824840760464","ERRORCODE":"CNT00044"}</Message>
+            <StackTrace>
+                <Frame>Xpo.Sc.Wmx.Outbound.CoreContainer.MasterContainerBuild.SetContainer() in E:\jenkins\workspace\WMX_Rel-22.2.05\Warehouse\Outbound\COREPALLET\MasterContainerBuild.cs:line 358</Frame>
+                <Frame>Xpo.Sc.Wmx.Outbound.CoreContainer.MasterContainerBuild.CloseMasterContainer(String siteId, String clientId, String containerSearchVal, String user) in E:\jenkins\workspace\WMX_Rel-22.2.05\Warehouse\Outbound\COREPALLET\MasterContainerBuild.cs:line 281</Frame>
+                <Frame>Xpo.Sc.Wmx.WebApi.Outbound.Controllers.CoreContainerController.CloseMasterContainer(String containerSearchVal) in E:\jenkins\workspace\WMX_Rel-22.2.05\WebApi\Outbound\Controllers\CoreContainerController.cs:line 1229</Frame>
+                <Frame>lambda_method(Closure , Object , Object[] )</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.&lt;&gt;c__DisplayClass10.&lt;GetExecutor&gt;b__9(Object instance, Object[] methodParameters)</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.Execute(Object instance, Object[] arguments)</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ExecuteAsync(HttpControllerContext controllerContext, IDictionary`2 arguments, CancellationToken cancellationToken)</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ApiControllerActionInvoker.&lt;InvokeActionAsyncCore&gt;d__0.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;CallOnActionExecutedAsync&gt;d__5.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;CallOnActionExecutedAsync&gt;d__5.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;ExecuteActionFilterAsyncCore&gt;d__0.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ActionFilterResult.&lt;ExecuteAsync&gt;d__2.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ExceptionFilterResult.&lt;ExecuteAsync&gt;d__0.MoveNext()</Frame>
+            </StackTrace>
+            </Xpo.Sc.Wmx.Common.WxValidationException>
+        </p>
+        <h2>
+            http://api.outbound.wmxp008.wmx.sc.xpo.com/container/unassignmastercontainer/3030323733313239383234383430373630343635/302e6c6679366c3164756f3866 Request Method: PUT
+        </h2>
+        <p>
+            Found in WMx Prod/Outbound/Master Container
+        </p>
+        <p>
+            Payload = '["0002845265", "0002844613", "0002844615", "0002844855", "0002845183"]'
+        </p>
+        <p>
+            response = ''
+        </p>
+        <p>
+            If not possible to unmaster:
+
+            UnAssign MasterContainer 00273129824840760465 not completed successfully. 
+            |<Xpo.Sc.Wmx.Common.WxValidationException>
+            <Message>{"CNTERR":"1","CONTCOUNT":"1","MASTER_CONTAINERKEY":"00273129824840760465","ERRORCODE":"CNT00088"}</Message>
+            <StackTrace>
+                <Frame>Xpo.Sc.Wmx.Outbound.CoreContainer.MasterContainerBuild.UnAssignMasterContainer(String siteId, List`1 containerKeys, String masterContainer, String user, String errBatchKey) in E:\jenkins\workspace\WMX_Rel-22.2.05\Warehouse\Outbound\COREPALLET\MasterContainerBuild.cs:line 262</Frame>
+                <Frame>Xpo.Sc.Wmx.WebApi.Outbound.Controllers.CoreContainerController.UnAssignMasterContainer(List`1 containerKeys, String masterContainer, String errBatchKey) in E:\jenkins\workspace\WMX_Rel-22.2.05\WebApi\Outbound\Controllers\CoreContainerController.cs:line 1213</Frame>
+                <Frame>lambda_method(Closure , Object , Object[] )</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.&lt;&gt;c__DisplayClass10.&lt;GetExecutor&gt;b__9(Object instance, Object[] methodParameters)</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ActionExecutor.Execute(Object instance, Object[] arguments)</Frame>
+                <Frame>System.Web.Http.Controllers.ReflectedHttpActionDescriptor.ExecuteAsync(HttpControllerContext controllerContext, IDictionary`2 arguments, CancellationToken cancellationToken)</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ApiControllerActionInvoker.&lt;InvokeActionAsyncCore&gt;d__0.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;CallOnActionExecutedAsync&gt;d__5.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;CallOnActionExecutedAsync&gt;d__5.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Filters.ActionFilterAttribute.&lt;ExecuteActionFilterAsyncCore&gt;d__0.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ActionFilterResult.&lt;ExecuteAsync&gt;d__2.MoveNext()</Frame>
+                <Frame>d of stack trace from previous location where exception was thrown ---</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)</Frame>
+                <Frame>System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)</Frame>
+                <Frame>System.Web.Http.Controllers.ExceptionFilterResult.&lt;ExecuteAsync&gt;d__0.MoveNext()</Frame>
+            </StackTrace>
+            </Xpo.Sc.Wmx.Common.WxValidationException>
         </p>
         <h2>
             http://api.cqrs.wmxp008.wmx.sc.xpo.com/queryservice/order/3030323733313239383234383430373630343635/case Request Method: GET 

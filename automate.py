@@ -1077,7 +1077,7 @@ def temp2():
 
 def temp3():
     conn = initWMx()
-    containerKey = '00273129824840760464' #5'
+    containerKey = '00273129824840760465' #5'
     print('1: Lookup master container')
     headers = [20, 1, 11, 12, 13, 14, 15, 18, 24, 17, 16, 4, 19, 21, 22, 8, 9]
     response, responseHeaders = makeRequest(conn, "GET", "/container/lookupmastercontainer/" + addThrees(containerKey), getHeaders(headers, WMxHeaderTable), None)
@@ -1099,8 +1099,8 @@ def temp3():
 if __name__ == '__main__':
     # temp()
     # temp2()
-    temp3()
-    # main()
+    # temp3()
+    main()
 
 ####
 
