@@ -258,15 +258,20 @@ def getNewLoadID(conn):
     dummyLoads = []
     for load in activeLoads:
         if load['TRAILERTYPE'] == 'B05' and load['STATUS'] == 101:
-            print(load['LOADID'], load['PLANSHIPDATE'])
-            dummyLoads.append(load['LOADID'])
-    #
+            dummyLoads.append(load)
+    
     if len(dummyLoads) == 0:
         print('No B05 Load IDs found. What the hell happened?')
         input('Press anything to continue...')
         return ''
-    dummyLoads.sort()
-    dummyLoad = dummyLoads[0]
+    
+    dummyLoads.sort(key=lambda ws: ws['LOADID'])
+
+    # Print out all load ids for reference
+    for load in dummyLoads:
+        print(load['LOADID'], load['PLANSHIPDATE'])
+
+    dummyLoad = dummyLoads[0]['LOADID']
     print('Found LOAD_ID: ' + dummyLoad)
     if input('Use this Load ID? (Y/N)') != 'Y':
         return ''
@@ -818,13 +823,13 @@ def processATR(atr: list, blacklist: list) -> dict:
 
     for record in atr:
         status = record['COMMENTS'][:3]
-        if record['PACKGROUPKEY'][3:6] in blacklist:
-            continue
+        # if record['PACKGROUPKEY'][3:6] in blacklist:
+        #     continue
         if record['COMMENTS'].find('OPEN PICKS') != -1:
             continue
         # if record['CARRIER'][2:5] == 'LAX':
         #     continue
-        if record['CASE_CREATE_DATE_PST'][:10] >= '05/30/2022': #datetime.now().strftime('%m/%d/%Y'):
+        if record['CASE_CREATE_DATE_PST'][:10] >= datetime.now().strftime('%m/%d/%Y'):
             logging.debug('Skipping record: %s', record)
             continue
         if status in unprocessedStatuses:
@@ -1026,7 +1031,7 @@ def main() -> None:
 def temp():
     conn = initWMx()
 
-    loadid = '0000030829'
+    loadid = '0000031311'
     initLoading(conn, loadid)
 
     print('1')

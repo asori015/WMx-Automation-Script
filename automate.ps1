@@ -6,7 +6,7 @@
 
 # IGNORE ABOVE
 ############################################
-# YOU SHOULD ONLY FOCUS ON THIS
+# YOU SHOULD ONLY FOCUS ON THIS BELOW
 
-python automate.py -f -t 0 -u asorialimon -p Welcome12345 -e totes.xlsx # -l 0000031012
+python automate.py -f -t 16 -u asorialimon -p Welcome12345 -e totes.xlsx #-l 0000031311
 # python -h
