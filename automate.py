@@ -1,3 +1,4 @@
+import tkinter as tk
 import http.client
 import sys
 import openpyxl
@@ -1101,19 +1102,21 @@ def temp3():
 
     return
 
+def x():
+    def changeText():  
+        label.configure(text="Welcome to StackHowTo!") 
+    gui = tk.Tk()
+    gui.geometry('300x100')  
+    label = tk.Label(gui, text="Hello World!")
+    label.pack(pady=20)
+    button = tk.Button(gui, text="Change the text", command=changeText)
+    button.pack()
+    gui.mainloop()
+    return
+
 if __name__ == '__main__':
     # temp()
     # temp2()
     # temp3()
-    main()
-
-####
-
-# from tkinter import *
-# from tkinter import ttk
-# root = Tk()
-# frm = ttk.Frame(root, padding=10)
-# frm.grid()
-# ttk.Label(frm, text = 'Hello World!').grid(column=0, row=0)
-# ttk.Button(frm, text='Quit', command=root.destroy).grid(column=1, row=0)
-# root.mainloop()
+    # main()
+    x()
