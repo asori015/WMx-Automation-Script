@@ -68,7 +68,7 @@ cookieHeaders = re.findall(r'Set-Cookie: (.*);', str(responseHeaders))
 cookieHeader = functools.reduce(lambda a, b: a + b[:b.find(';')] + '; ', cookieHeaders, '')[:-2]
 
 headers = [0, 1, 37, 38, 2, 3, 4, 5, 14, 39, 6, 7, 16, 9, 10, 11, 31, 12, 13, 32]
-params = 'csrf_token=' + csrfToken + '&version=1.2.4&username=tponce&password=Welcome1234567&execution=&_eventId=submit&geolocation=&submit=Log+In'
+params = 'csrf_token=' + csrfToken + '&version=1.2.4&username=<>&password=<>&execution=&_eventId=submit&geolocation=&submit=Log+In'
 lookupHeaders[37] = ('Content-Length', str(len(params)))
 lookupHeaders[32] = ('Cookie', cookieHeader)
 print('loging in...')
