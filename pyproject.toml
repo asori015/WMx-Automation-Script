@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "wmx_automate"
 version = "1.1.1"
-description = "Automate wmx process"
+description = "Automate wmx dummy load process"
 readme = "README.md"
 authors = [{ name = "Anthony Soria", email = "asori015@ucr.com" }]
 license = { file = "LICENSE" }

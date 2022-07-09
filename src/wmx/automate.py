@@ -959,7 +959,7 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument(
         "-v", "--version", 
         action="version",
-        version = f"{parser.prog} version 1.0.0"
+        version = f"{parser.prog} version 1.1.1"
     )
     parser.add_argument(
         "-u", "--username",

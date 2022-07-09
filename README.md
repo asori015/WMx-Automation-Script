@@ -1,3 +1,3 @@
 # WMx Automation Script
 
-This program automates a process in WMx
+This program automates the dummy load process in WMx.
